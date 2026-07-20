@@ -10,5 +10,13 @@ dependencies = [
     "lxml>=5.0",
 ]
 
+[project.optional-dependencies]
+# ML experiments — install with:  uv sync --extra ml
+ml = [
+    "numpy>=1.26",
+    "scikit-learn>=1.4",
+    "pandas>=2.0",
+]
+
 [tool.uv]
 package = false

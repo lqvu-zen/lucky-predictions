@@ -23,12 +23,21 @@ from analyze import hot_cold, load_draws, summary
 from config import PRODUCTS, REPORTS_DIR, get_product
 from predict import suggest_all
 
+try:
+    from ml.score import load_scorecard
+except Exception:  # ml package optional
+    load_scorecard = lambda: None  # noqa: E731
 
-def _product_payload(name: str, seed: int) -> dict:
+
+def _product_payload(name: str, seed: int, scorecard: dict | None) -> dict:
     product = get_product(name)
     draws = load_draws(product)
     if not draws:
         return {"label": product.label, "draws": 0}
+
+    ml = None
+    if scorecard and name in scorecard.get("games", {}):
+        ml = scorecard["games"][name]
 
     s = summary(name)
     hot30, cold30 = hot_cold(draws, product, 30)
@@ -54,6 +63,7 @@ def _product_payload(name: str, seed: int) -> dict:
         "overdue": s["most_overdue"],
         "recent": recent,
         "predictions": predictions,
+        "ml": ml,
     }
 
 
@@ -254,6 +264,32 @@ keys.forEach((k,idx)=>{
   const predRows = Object.entries(d.predictions).map(([s,line])=>
     `<div class="row"><div class="tag">${s}</div>${balls(line,null,true)}</div>`).join('');
 
+  let mlCard = '';
+  if(d.ml){
+    const m = d.ml;
+    const np = m.next_prediction;
+    const modelRows = Object.entries(m.models||{}).map(([k,v])=>{
+      const edge = v.mean_hits - v.baseline_hits;
+      const col = Math.abs(edge)<0.15 ? 'var(--muted)' : (edge>0?'var(--mint)':'var(--hot)');
+      return `<tr><td><b>${k}</b></td><td>${v.scored}</td>
+        <td>${v.mean_hits.toFixed(2)}</td>
+        <td style="color:var(--faint)">${v.baseline_hits.toFixed(2)}</td>
+        <td style="color:${col}">${edge>=0?'+':''}${edge.toFixed(2)}</td>
+        <td>${v.mean_brier.toFixed(4)}</td></tr>`;
+    }).join('');
+    const nextLines = np ? Object.entries(np.by_model).map(([k,line])=>
+        `<div class="row"><div class="tag">${k}</div>${balls(line,null,true)}</div>`).join('') : '';
+    const scored = m.total_scored||0;
+    mlCard = `
+      <div class="card col12">
+        <h3><span class="ic" style="background:var(--violet)"></span>ML model scorecard ${scored?`· ${scored} predictions scored`:'· awaiting first results'}</h3>
+        ${modelRows ? `<table><thead><tr><th>Model</th><th>Scored</th><th>Mean hits</th><th>Baseline</th><th>Δ</th><th>Brier</th></tr></thead><tbody>${modelRows}</tbody></table>`
+          : `<div style="color:var(--muted);font-size:13px">No predictions have been scored yet. After the next draw is crawled, results appear here — expected to sit on the baseline.</div>`}
+        ${np ? `<h3 style="margin-top:18px"><span class="ic" style="background:var(--mint)"></span>Next-draw prediction · ${np.target_date}</h3><div class="pred">${nextLines}</div>` : ''}
+        <div style="color:var(--faint);font-size:11px;margin-top:12px">Δ = mean hits minus the random baseline. Values hovering near zero mean the model has no edge — the expected, honest result.</div>
+      </div>`;
+  }
+
   const recent = d.recent.map(r=>`<tr>
       <td>${r.date}</td><td>#${r.id}</td>
       <td class="recent-nums">${r.main.map(pad).join(' ')}${r.bonus!=null?` <span class="b">| ${pad(r.bonus)}</span>`:''}</td>
@@ -275,12 +311,14 @@ keys.forEach((k,idx)=>{
 
       <div class="card col8">
         <h3><span class="ic" style="background:var(--cold)"></span>All-time frequency</h3>
-        <canvas id="chart-${k}" height="150"></canvas>
+        <div class="chartbox"><canvas id="chart-${k}"></canvas></div>
       </div>
       <div class="card col4">
         <h3><span class="ic" style="background:var(--mint)"></span>Today's suggested lines</h3>
         <div class="pred">${predRows}</div>
       </div>
+
+      ${mlCard}
 
       <div class="card col12">
         <h3><span class="ic" style="background:var(--violet)"></span>Number heatmap — every number, shaded by how often it's drawn</h3>
@@ -340,7 +378,8 @@ window.addEventListener('load',()=>drawChart(keys[0]));
 
 def build(output_path=None) -> str:
     seed = int(datetime.now().strftime("%Y%m%d"))  # stable within a day
-    payload = {name: _product_payload(name, seed) for name in PRODUCTS}
+    scorecard = load_scorecard()
+    payload = {name: _product_payload(name, seed, scorecard) for name in PRODUCTS}
     html = (HTML_TEMPLATE
             .replace("__DATA__", json.dumps(payload, ensure_ascii=False))
             .replace("__GENERATED__", datetime.now().strftime("%Y-%m-%d %H:%M")))

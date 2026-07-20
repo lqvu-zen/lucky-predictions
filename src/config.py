@@ -7,12 +7,17 @@ number (the last element). Only the 6 main numbers count for analysis.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 # Project root = parent of this file's directory (src/)
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 REPORTS_DIR = ROOT / "reports"
+PRED_DIR = ROOT / "predictions"
+
+# Python weekday(): Monday=0 ... Sunday=6
+_WD = {"Mon": 0, "Tue": 1, "Wed": 2, "Thu": 3, "Fri": 4, "Sat": 5, "Sun": 6}
 
 
 @dataclass(frozen=True)
@@ -26,10 +31,28 @@ class Product:
     max_value: int
     main_count: int      # numbers that count (6); result also has 1 bonus
     referer: str
+    draw_days: tuple = ()   # weekdays draws happen (Mon=0..Sun=6)
+    draw_hour: int = 18     # draws at 18:00 Vietnam time
 
     @property
     def raw_path(self) -> Path:
         return DATA_DIR / f"{self.name.replace('power_', 'power')}.jsonl"
+
+    def next_draw_date(self, ref: datetime | None = None) -> date:
+        """The date of the next draw at/after `ref` (default: now).
+
+        If today is a draw day and it's before the draw hour, today counts;
+        otherwise it rolls forward to the next scheduled draw day.
+        """
+        ref = ref or datetime.now()
+        today = ref.date()
+        for offset in range(0, 8):
+            d = today + timedelta(days=offset)
+            if d.weekday() in self.draw_days:
+                if offset == 0 and ref.hour >= self.draw_hour:
+                    continue  # today's draw already happened
+                return d
+        return today  # unreachable if draw_days non-empty
 
 
 _BASE = "https://vietlott.vn/ajaxpro/Vietlott.PlugIn.WebParts."
@@ -44,6 +67,7 @@ POWER_655 = Product(
     max_value=55,
     main_count=6,
     referer="https://vietlott.vn/vi/trung-thuong/ket-qua-trung-thuong/winning-number-655",
+    draw_days=(_WD["Tue"], _WD["Thu"], _WD["Sat"]),
 )
 
 POWER_645 = Product(
@@ -56,6 +80,7 @@ POWER_645 = Product(
     max_value=45,
     main_count=6,
     referer="https://vietlott.vn/vi/trung-thuong/ket-qua-trung-thuong/winning-number-645",
+    draw_days=(_WD["Wed"], _WD["Fri"], _WD["Sun"]),
 )
 
 PRODUCTS = {p.name: p for p in (POWER_655, POWER_645)}

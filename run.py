@@ -138,6 +138,91 @@ def cmd_backtest(args) -> None:
     print(backtest.format_report(bt))
 
 
+def _need_ml():
+    try:
+        import numpy  # noqa: F401
+        import sklearn  # noqa: F401
+    except ImportError:
+        sys.exit("ML features need extra deps. Install with:  uv sync --extra ml")
+
+
+def cmd_ml_backtest(args) -> None:
+    _need_ml()
+    from ml import evaluate
+    print()
+    for kind in (["logreg", "gb"] if args.model == "both" else [args.model]):
+        r = evaluate.walk_forward(args.product, kind=kind,
+                                  test_draws=args.test, retrain_every=args.retrain)
+        print(evaluate.format_report(r))
+        print()
+
+
+def cmd_ml_compare(args) -> None:
+    _need_ml()
+    from ml import compare
+    kinds = args.models.split(",") if args.models else ("logreg", "gb", "rf")
+    print()
+    print(compare.format_report(
+        compare.compare(args.product, kinds=tuple(kinds),
+                        test_draws=args.test, retrain_every=args.retrain)))
+
+
+def cmd_ml_predict(args) -> None:
+    _need_ml()
+    from ml.predict_next import predict_next
+    e = predict_next(args.product, kind=args.model, log=not args.no_log)
+    p = get_product(args.product)
+    print(f"\n{p.label} — {e['model']} prediction for next draw {e['target_date']}:")
+    print("  " + " - ".join(f"{n:02d}" for n in e["top6"]))
+    top = sorted(e["probs"].items(), key=lambda kv: -kv[1])[:8]
+    print("  most likely (P):", ", ".join(f"{n}={v:.3f}" for n, v in top))
+    if not args.no_log:
+        print("  logged to predictions/ledger.jsonl")
+    print("\n(Reminder: expected to match random odds — logged now so we can score it honestly later.)")
+
+
+def _run_ml_loop(models=("logreg", "gb"), verbose=True):
+    """Score any predictions whose draw has happened, then predict the next
+    draw for both games with each model. Returns the fresh scorecard."""
+    from ml import ledger, score
+    from ml.predict_next import predict_next
+
+    newly = score.score_pending()
+    if verbose and newly:
+        for s in newly:
+            print(f"[ml-score] {s['game']} {s['target_date']} {s['model']}: "
+                  f"{s['hits']} hits (top6 {s['top6']} vs {s['actual']})")
+    elif verbose:
+        print("[ml-score] no predictions ready to score yet")
+
+    pending = ledger.pending_keys()
+    for name in PRODUCTS:
+        target = get_product(name).next_draw_date().isoformat()
+        for kind in models:
+            if (name, kind, target) in pending:
+                continue  # already predicted this draw
+            e = predict_next(name, kind=kind, log=True)
+            if verbose:
+                print(f"[ml-predict] {name} {kind} -> {target}: {e['top6']}")
+
+    card = score.rebuild_scorecard()
+    return card
+
+
+def cmd_ml_loop(args) -> None:
+    _need_ml()
+    card = _run_ml_loop(verbose=True)
+    print("\nRolling scorecard:")
+    for name, g in card["games"].items():
+        if not g["models"]:
+            print(f"  {g['label']}: nothing scored yet")
+            continue
+        for kind, m in g["models"].items():
+            print(f"  {g['label']} [{kind}]: {m['scored']} scored, "
+                  f"mean hits {m['mean_hits']} vs baseline {m['baseline_hits']}, "
+                  f"Brier {m['mean_brier']} vs base {m['mean_brier_base']}")
+
+
 def cmd_dashboard(args) -> None:
     path = dashboard.build()
     print(f"[dashboard] wrote {path}")
@@ -178,7 +263,17 @@ def cmd_daily(args) -> None:
     latest.write_text(report, encoding="utf-8")
     print(f"[report] wrote {out}")
 
-    # 3) refresh the HTML dashboard
+    # 3) ML predict->score loop (best effort; skipped if ml deps not installed)
+    try:
+        import numpy  # noqa: F401
+        import sklearn  # noqa: F401
+        _run_ml_loop(verbose=True)
+    except ImportError:
+        print("[ml] extras not installed (uv sync --extra ml) — skipping ML loop")
+    except Exception as e:  # noqa: BLE001
+        print(f"[ml] loop skipped: {type(e).__name__}: {e}", file=sys.stderr)
+
+    # 4) refresh the HTML dashboard (now includes the ML scorecard)
     print(f"[dashboard] wrote {dashboard.build()}")
 
 
@@ -211,6 +306,29 @@ def main() -> None:
     pb.add_argument("--window", type=int, default=60)
     pb.add_argument("--seed", type=int, default=0)
     pb.set_defaults(func=cmd_backtest)
+
+    pmb = sub.add_parser("ml-backtest", help="walk-forward ML evaluation")
+    pmb.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    pmb.add_argument("--model", default="logreg", choices=["logreg", "gb", "both"])
+    pmb.add_argument("--test", type=int, default=120, help="draws to evaluate")
+    pmb.add_argument("--retrain", type=int, default=15, help="retrain cadence")
+    pmb.set_defaults(func=cmd_ml_backtest)
+
+    pmc = sub.add_parser("ml-compare", help="compare models with bootstrap CIs")
+    pmc.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    pmc.add_argument("--models", default="", help="comma list, e.g. logreg,gb,rf")
+    pmc.add_argument("--test", type=int, default=100)
+    pmc.add_argument("--retrain", type=int, default=50)
+    pmc.set_defaults(func=cmd_ml_compare)
+
+    pmp = sub.add_parser("ml-predict", help="predict + log the next draw")
+    pmp.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    pmp.add_argument("--model", default="logreg", choices=["logreg", "gb"])
+    pmp.add_argument("--no-log", action="store_true", help="don't write to the ledger")
+    pmp.set_defaults(func=cmd_ml_predict)
+
+    pml = sub.add_parser("ml-loop", help="score past predictions + predict next draw")
+    pml.set_defaults(func=cmd_ml_loop)
 
     pdash = sub.add_parser("dashboard", help="generate reports/dashboard.html")
     pdash.set_defaults(func=cmd_dashboard)

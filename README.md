@@ -96,6 +96,102 @@ uv run python run.py dashboard
 uv run python run.py backtest power_655
 ```
 
+## Machine-learning experiments (`ml`)
+
+An optional ML pipeline treats prediction as N binary questions — for each
+number, *what's the probability it appears in the next draw?* — then ranks
+the top 6. It exists to practice real ML engineering (leakage-safe features,
+versioned models, walk-forward evaluation, a predict→score loop), not to
+beat the lottery. It won't: the harness is built to *measure* that honestly.
+
+Install the extra dependencies first:
+
+```bash
+uv sync --extra ml
+```
+
+Commands:
+
+```bash
+# Walk-forward evaluation (logistic regression, gradient boosting, or both)
+uv run python run.py ml-backtest power_655 --model both
+
+# Compare models with 95% confidence intervals (the honest tuning verdict)
+uv run python run.py ml-compare power_655 --models logreg,gb,rf
+
+# Predict the next scheduled draw and log it to the prediction ledger
+uv run python run.py ml-predict power_655
+
+# The full feedback loop: score any predictions whose draw has happened,
+# then predict the next draw for both games with both models
+uv run python run.py ml-loop
+```
+
+**Draw schedule** is encoded in `config.py` (6/55 Tue/Thu/Sat 18:00, 6/45
+Wed/Fri/Sun 18:00), so `ml-predict` targets the correct upcoming draw and
+records it in `predictions/ledger.jsonl` *before* the result exists — the
+basis for honest scoring later.
+
+**What the evaluation shows.** Beyond raw hit-counts, it reports a **Brier
+score** and **log-loss** on the per-number probabilities — the real test of
+whether the probabilities are informative — against the trivial "every
+number = 6/N" predictor:
+
+```
+Power 6/55 — ML backtest (logreg) over 120 draws
+  mean hits (top-6)     0.567   (random baseline 0.655, diff -0.088)
+  Brier score           0.09722 (base-rate 0.09719, diff +0.00003)
+  log-loss              0.34476 (base-rate 0.34461)
+  Verdict: on par with random, as expected. No usable signal.
+```
+
+The Brier score matching the base rate to five decimals is the honest
+takeaway: the model's probabilities carry no more information than knowing
+each number appears 6/N of the time. If a model ever *did* beat baseline,
+the harness flags it (and it would almost certainly mean a data leak to fix).
+
+**Tuning, done honestly.** The feature set is deliberately rich — multi-window
+frequencies (10/30/50/100), an exponential-decay rate, gap/overdue ratios,
+and pair co-occurrence with the previous draw — and three models are on
+offer (`logreg`, `gb`, `rf`). `ml-compare` puts them head to head with
+**bootstrap 95% confidence intervals**, the only fair way to tell a real
+gain from luck:
+
+```
+Power 6/55 — model comparison over 90 draws (95% bootstrap CIs)
+Random baseline: 0.655 hits/ticket · base-rate Brier 0.09719
+
+model            mean hits [95% CI]             Brier [95% CI]  verdict
+--------------------------------------------------------------------------
+logreg          0.611 [0.456,0.767]     0.0972 [0.0903,0.1044]  ≈ random
+gb              0.667 [0.522,0.822]     0.0973 [0.0904,0.1045]  ≈ random
+rf              0.667 [0.522,0.811]     0.0973 [0.0904,0.1044]  ≈ random
+```
+
+Every interval straddles the baseline. Adding features and stronger models
+changes nothing — there is no signal to find in a uniform draw, and now we
+can *prove* it rather than assume it. That measurement discipline is the
+real deliverable.
+
+**The predict→score loop.** `ml-loop` closes the feedback cycle:
+
+1. **Score** — any ledger prediction whose draw has now happened (and been
+   crawled) is matched to the real result; hits, Brier, and log-loss are
+   written to `predictions/scored.jsonl`.
+2. **Predict** — a fresh prediction is logged for the next scheduled draw
+   of each game, with both models.
+3. **Aggregate** — a rolling `predictions/scorecard.json` is rebuilt and
+   surfaced on the dashboard (mean hits vs baseline, Brier vs base rate).
+
+The daily run calls this automatically **when the ML extras are installed**
+(it's skipped silently otherwise, so the lightweight cloud crawl is
+unaffected). To include it in the GitHub Actions run, change the workflow's
+`uv sync` step to `uv sync --extra ml`.
+
+Over time the scorecard is the honest record of how the models actually do
+on unseen draws — the data you'd use to decide whether any change is a real
+improvement or just noise.
+
 ## Does any strategy actually work? (backtest)
 
 `backtest` walks forward through history: at each past draw it builds each
