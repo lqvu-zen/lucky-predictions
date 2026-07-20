@@ -10,3 +10,4 @@ env/
 # Generated at runtime (kept out of version control)
 logs/
 reports/*.md
+reports/*.html

@@ -27,6 +27,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from config import PRODUCTS, REPORTS_DIR, get_product  # noqa: E402
 import analyze  # noqa: E402
+import dashboard  # noqa: E402
 import predict  # noqa: E402
 
 
@@ -129,6 +130,11 @@ def _report_section(name: str, seed: int | None) -> str:
     return "\n".join(lines)
 
 
+def cmd_dashboard(args) -> None:
+    path = dashboard.build()
+    print(f"[dashboard] wrote {path}")
+
+
 def cmd_daily(args) -> None:
     # 1) crawl (best effort — skip on network failure so report still runs)
     try:
@@ -164,6 +170,9 @@ def cmd_daily(args) -> None:
     latest.write_text(report, encoding="utf-8")
     print(f"[report] wrote {out}")
 
+    # 3) refresh the HTML dashboard
+    print(f"[dashboard] wrote {dashboard.build()}")
+
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Vietlott crawl + analyze + predict")
@@ -187,7 +196,10 @@ def main() -> None:
     pp.add_argument("--seed", type=int, default=None)
     pp.set_defaults(func=cmd_predict)
 
-    pd = sub.add_parser("daily", help="crawl + analyze + predict + write report")
+    pdash = sub.add_parser("dashboard", help="generate reports/dashboard.html")
+    pdash.set_defaults(func=cmd_dashboard)
+
+    pd = sub.add_parser("daily", help="crawl + analyze + predict + report + dashboard")
     pd.add_argument("--pages", type=int, default=1)
     pd.set_defaults(func=cmd_daily)
 
