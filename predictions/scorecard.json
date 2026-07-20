@@ -1,0 +1,57 @@
+{
+  "generated": "2026-07-20T22:02:13.734458",
+  "games": {
+    "power_655": {
+      "label": "Power 6/55",
+      "models": {},
+      "next_prediction": {
+        "target_date": "2026-07-21",
+        "by_model": {
+          "logreg": [
+            27,
+            45,
+            46,
+            47,
+            54,
+            55
+          ],
+          "gb": [
+            12,
+            27,
+            37,
+            41,
+            47,
+            49
+          ]
+        }
+      },
+      "total_scored": 0
+    },
+    "power_645": {
+      "label": "Power 6/45",
+      "models": {},
+      "next_prediction": {
+        "target_date": "2026-07-22",
+        "by_model": {
+          "logreg": [
+            12,
+            30,
+            36,
+            38,
+            41,
+            42
+          ],
+          "gb": [
+            12,
+            14,
+            17,
+            37,
+            43,
+            45
+          ]
+        }
+      },
+      "total_scored": 0
+    }
+  }
+}
