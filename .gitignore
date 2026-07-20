@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+.idea/
+.vscode/
+.DS_Store
+
+# Generated at runtime (kept out of version control)
+logs/
+reports/*.md
