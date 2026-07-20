@@ -88,7 +88,39 @@ uv run python run.py predict power_645 --strategy all
 
 # Do everything and write reports/report_YYYY-MM-DD.md
 uv run python run.py daily
+
+# Generate the HTML dashboard
+uv run python run.py dashboard
+
+# Backtest the strategies against real history
+uv run python run.py backtest power_655
 ```
+
+## Does any strategy actually work? (backtest)
+
+`backtest` walks forward through history: at each past draw it builds each
+strategy's weights from *only the earlier draws*, generates tickets, and
+counts how many of the 6 numbers each got right — then compares the average
+to the baseline for uniformly random guessing (`6 × 6 / N` matches per
+ticket: ≈0.655 for 6/55, 0.800 for 6/45).
+
+Every strategy lands within noise of that baseline — none has an edge:
+
+```
+Power 6/55 — backtest over 1173 draws, 11,730 tickets per strategy
+Random baseline (expected matches per ticket): 0.655
+
+strategy    mean hits  vs random   4+ hits
+------------------------------------------
+cold            0.655     +0.000         8
+overdue         0.649     -0.006         7
+random          0.649     -0.006         4
+balanced        0.646     -0.009         3
+hot             0.645     -0.010         7
+```
+
+That's the whole point: lottery draws are independent and uniform, so past
+frequencies carry no predictive power. The backtest lets you *see* it.
 
 > **Note on running the crawl:** it must run on a machine that can reach
 > `vietlott.vn` directly. Draw schedule: 6/55 on Tue/Thu/Sat, 6/45 on

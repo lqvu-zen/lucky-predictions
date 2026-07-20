@@ -27,6 +27,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from config import PRODUCTS, REPORTS_DIR, get_product  # noqa: E402
 import analyze  # noqa: E402
+import backtest  # noqa: E402
 import dashboard  # noqa: E402
 import predict  # noqa: E402
 
@@ -130,6 +131,13 @@ def _report_section(name: str, seed: int | None) -> str:
     return "\n".join(lines)
 
 
+def cmd_backtest(args) -> None:
+    bt = backtest.run(args.product, warmup=args.warmup,
+                      tickets=args.tickets, window=args.window, seed=args.seed)
+    print()
+    print(backtest.format_report(bt))
+
+
 def cmd_dashboard(args) -> None:
     path = dashboard.build()
     print(f"[dashboard] wrote {path}")
@@ -195,6 +203,14 @@ def main() -> None:
     pp.add_argument("--tickets", type=int, default=3)
     pp.add_argument("--seed", type=int, default=None)
     pp.set_defaults(func=cmd_predict)
+
+    pb = sub.add_parser("backtest", help="score strategies against history")
+    pb.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    pb.add_argument("--warmup", type=int, default=200)
+    pb.add_argument("--tickets", type=int, default=10)
+    pb.add_argument("--window", type=int, default=60)
+    pb.add_argument("--seed", type=int, default=0)
+    pb.set_defaults(func=cmd_backtest)
 
     pdash = sub.add_parser("dashboard", help="generate reports/dashboard.html")
     pdash.set_defaults(func=cmd_dashboard)

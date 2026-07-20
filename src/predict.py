@@ -48,10 +48,13 @@ def _normalize(d: dict[int, float]) -> dict[int, float]:
 
 
 def build_weights(draws: list[dict], product: Product, strategy: str,
-                  window: int = 60) -> dict[int, float]:
+                  window: int = 60, ref=None) -> dict[int, float]:
+    # `ref` = the date to measure "days since last" against. Defaults to
+    # today; the backtest passes the historical draw date so overdue/
+    # balanced weights reflect what was known at that point in time.
     nums = range(product.min_value, product.max_value + 1)
     freq = recent_frequency(draws, product, window)
-    dsl = days_since_last(draws, product)
+    dsl = days_since_last(draws, product, ref)
 
     if strategy == "random":
         return {n: 1.0 for n in nums}
