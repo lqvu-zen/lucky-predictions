@@ -82,25 +82,32 @@ def cmd_analyze(args) -> None:
 
 
 def cmd_predict(args) -> None:
+    # Default to a per-draw seed so lines stay locked for a given draw;
+    # pass --seed to override for experimentation.
+    seed = args.seed
+    if seed is None:
+        seed = int(get_product(args.product).next_draw_date().strftime("%Y%m%d"))
     if args.strategy == "all":
-        allsug = predict.suggest_all(args.product, tickets=args.tickets, seed=args.seed)
+        allsug = predict.suggest_all(args.product, tickets=args.tickets, seed=seed)
         print(f"\n{get_product(args.product).label} — suggested lines:")
         for strat, lines in allsug.items():
             for ln in lines:
                 print(f"  {strat:9s}: {_fmt_line(ln)}")
     else:
-        r = predict.suggest(args.product, args.strategy, args.tickets, seed=args.seed)
+        r = predict.suggest(args.product, args.strategy, args.tickets, seed=seed)
         print(f"\n{r['product']} — {r['strategy']} (window {r['window']} draws):")
         for ln in r["tickets"]:
             print(f"  {_fmt_line(ln)}")
     print("\n(For fun only — these cannot improve real odds.)")
 
 
-def _report_section(name: str, seed: int | None) -> str:
+def _report_section(name: str) -> str:
     p = get_product(name)
     s = analyze.summary(name)
     if not s.get("draws"):
         return f"## {p.label}\n\n_No data yet._\n"
+    # Seed by the next draw date so the suggested lines are locked per draw.
+    seed = int(p.next_draw_date().strftime("%Y%m%d"))
     allsug = predict.suggest_all(name, tickets=1, seed=seed)
     lines = [
         f"## {p.label}",
@@ -253,7 +260,6 @@ def cmd_daily(args) -> None:
 
     # 2) build report
     today = datetime.now().strftime("%Y-%m-%d")
-    seed = int(datetime.now().strftime("%Y%m%d"))  # stable within a day
     parts = [
         f"# Vietlott daily report — {today}",
         "",
@@ -262,7 +268,7 @@ def cmd_daily(args) -> None:
         "",
     ]
     for name in PRODUCTS:
-        parts.append(_report_section(name, seed))
+        parts.append(_report_section(name))
     report = "\n".join(parts).rstrip() + "\n"
 
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)

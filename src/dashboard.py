@@ -29,11 +29,15 @@ except Exception:  # ml package optional
     load_scorecard = lambda: None  # noqa: E731
 
 
-def _product_payload(name: str, seed: int, scorecard: dict | None) -> dict:
+def _product_payload(name: str, scorecard: dict | None) -> dict:
     product = get_product(name)
     draws = load_draws(product)
     if not draws:
         return {"label": product.label, "draws": 0}
+
+    # Seed the "for fun" suggested lines by the NEXT DRAW DATE, not today,
+    # so they stay locked for a given draw instead of reshuffling daily.
+    seed = int(product.next_draw_date().strftime("%Y%m%d"))
 
     ml = None
     if scorecard and name in scorecard.get("games", {}):
@@ -377,9 +381,8 @@ window.addEventListener('load',()=>drawChart(keys[0]));
 
 
 def build(output_path=None) -> str:
-    seed = int(datetime.now().strftime("%Y%m%d"))  # stable within a day
     scorecard = load_scorecard()
-    payload = {name: _product_payload(name, seed, scorecard) for name in PRODUCTS}
+    payload = {name: _product_payload(name, scorecard) for name in PRODUCTS}
     html = (HTML_TEMPLATE
             .replace("__DATA__", json.dumps(payload, ensure_ascii=False))
             .replace("__GENERATED__", datetime.now().strftime("%Y-%m-%d %H:%M")))
