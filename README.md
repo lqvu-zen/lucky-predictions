@@ -243,7 +243,7 @@ Included batch files handle everything; no command typing needed:
 1. **`setup.bat`** — run once. Runs `uv sync` to create the environment and
    install dependencies. (Requires uv — see Setup above.)
 2. **`install_schedule.bat`** — run once. Registers a Windows scheduled task
-   named `VietlottDaily` that runs every evening at **21:00 (9 PM)**.
+   named `LuckyDaily` that runs every evening at **21:00 (9 PM)**.
    (To use a different time, open the file, change `21:00`, and re-run it.)
 3. **`daily.bat`** — the job itself (crawl → analyze → report). The scheduler
    calls it for you; you can also double-click it anytime to run on demand.
@@ -254,8 +254,8 @@ and appends output to `logs/daily.log`.
 Manage the task from a terminal if you like:
 
 ```bat
-schtasks /run    /tn VietlottDaily      REM run it now
-schtasks /delete /tn VietlottDaily /f   REM remove the schedule
+schtasks /run    /tn LuckyDaily      REM run it now
+schtasks /delete /tn LuckyDaily /f   REM remove the schedule
 ```
 
 > The PC must be on (not necessarily logged in) at the scheduled time for the

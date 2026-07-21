@@ -7,7 +7,7 @@ REM ============================================================
 setlocal
 cd /d "%~dp0"
 
-set "TASKNAME=VietlottDaily"
+set "TASKNAME=LuckyDaily"
 set "RUNTIME=21:00"
 set "SCRIPT=%~dp0daily.bat"
 

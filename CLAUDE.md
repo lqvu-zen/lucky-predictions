@@ -51,4 +51,4 @@ Stored draw record (one JSON object per line in `data/*.jsonl`):
 
 ## Windows automation
 
-`daily.bat` (crawl → analyze → report, appending to `logs/daily.log`) is the job. `install_schedule.bat` registers a `VietlottDaily` scheduled task (default 21:00). `setup.bat` runs `uv sync`. `push_to_github.bat` is a git helper. These target Windows; the scheduler calls `daily.bat`, which `cd`s to its own directory first.
+`daily.bat` (crawl → analyze → report, appending to `logs/daily.log`) is the job. `install_schedule.bat` registers a `LuckyDaily` scheduled task (default 21:00). `setup.bat` runs `uv sync`. `push_to_github.bat` is a git helper. These target Windows; the scheduler calls `daily.bat`, which `cd`s to its own directory first.
