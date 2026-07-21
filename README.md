@@ -119,6 +119,9 @@ uv run python run.py ml-backtest power_655 --model both
 # Compare models with 95% confidence intervals (the honest tuning verdict)
 uv run python run.py ml-compare power_655 --models logreg,gb,rf
 
+# See which features a model leans on (add --permutation for a robust view)
+uv run python run.py ml-importance power_655 --model rf
+
 # Predict the next scheduled draw and log it to the prediction ledger
 uv run python run.py ml-predict power_655
 
@@ -172,6 +175,15 @@ Every interval straddles the baseline. Adding features and stronger models
 changes nothing — there is no signal to find in a uniform draw, and now we
 can *prove* it rather than assume it. That measurement discipline is the
 real deliverable.
+
+**Feature importance.** `ml-importance` shows which signals a model leans on
+(tree `feature_importances_`, or standardized coefficients for logistic
+regression; `--permutation` adds a model-agnostic view that shuffles each
+feature and measures the Brier hit). The random forest leans on `rate_all`,
+`pair_lift`, `ema_rate`, and the gap features — but the permutation Δ Brier
+for even the top feature is ~0.0001, i.e. removing it barely changes
+anything. Importance here reflects how the model *fits history*, not any
+ability to predict the next draw.
 
 **The predict→score loop.** `ml-loop` closes the feedback cycle:
 

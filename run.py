@@ -167,6 +167,15 @@ def cmd_ml_compare(args) -> None:
                         test_draws=args.test, retrain_every=args.retrain)))
 
 
+def cmd_ml_importance(args) -> None:
+    _need_ml()
+    from ml import importance
+    print()
+    print(importance.format_report(
+        importance.importances(args.product, kind=args.model,
+                               permutation=args.permutation)))
+
+
 def cmd_ml_predict(args) -> None:
     _need_ml()
     from ml.predict_next import predict_next
@@ -320,6 +329,13 @@ def main() -> None:
     pmc.add_argument("--test", type=int, default=100)
     pmc.add_argument("--retrain", type=int, default=50)
     pmc.set_defaults(func=cmd_ml_compare)
+
+    pmi = sub.add_parser("ml-importance", help="which features the model leans on")
+    pmi.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    pmi.add_argument("--model", default="rf", choices=["logreg", "gb", "rf"])
+    pmi.add_argument("--permutation", action="store_true",
+                     help="also compute model-agnostic permutation importance")
+    pmi.set_defaults(func=cmd_ml_importance)
 
     pmp = sub.add_parser("ml-predict", help="predict + log the next draw")
     pmp.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
