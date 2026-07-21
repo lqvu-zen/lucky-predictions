@@ -1,5 +1,8 @@
 # Lucky Predictions
 
+📊 **Live dashboard:** https://lqvu-zen.github.io/lucky-predictions/
+_(updates automatically every evening after the draw)_
+
 A small, self-contained project for **learning about web crawling and data
 analysis** using Vietnamese lottery (Vietlott) data. It automatically fetches
 daily draw results for **Power 6/55** and **Power 6/45 (Mega)**, computes
@@ -281,9 +284,11 @@ To enable it (one-time):
 3. Go to the **Actions** tab, pick **daily-crawl**, and click **Run workflow**
    once to test it (or wait for the schedule).
 
-Your live dashboard will be at
-`https://YOUR_USERNAME.github.io/lucky-predictions/`. You can also grab the
-**lucky-dashboard** artifact from any run for an offline copy.
+Your live dashboard is at
+https://lqvu-zen.github.io/lucky-predictions/ (updated nightly, and it
+includes the **ML scorecard** since the cloud run installs the ML extras).
+You can also grab the **lucky-dashboard** artifact from any run for an
+offline copy.
 
 > The repo is public, so the code and committed `data/` are visible to
 > anyone — that's expected for a public Pages site. GitHub pauses scheduled

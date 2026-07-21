@@ -7,8 +7,13 @@ number (the last element). Only the 6 main numbers count for analysis.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
+
+# Vietlott draws are on Vietnam time (UTC+7, no daylight saving). Compute the
+# schedule against this fixed offset so it's correct anywhere it runs —
+# including GitHub Actions runners, which use UTC.
+VN_TZ = timezone(timedelta(hours=7))
 
 # Project root = parent of this file's directory (src/)
 ROOT = Path(__file__).resolve().parent.parent
@@ -44,7 +49,7 @@ class Product:
         If today is a draw day and it's before the draw hour, today counts;
         otherwise it rolls forward to the next scheduled draw day.
         """
-        ref = ref or datetime.now()
+        ref = ref or datetime.now(VN_TZ)
         today = ref.date()
         for offset in range(0, 8):
             d = today + timedelta(days=offset)

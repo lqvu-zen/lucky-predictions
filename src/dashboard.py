@@ -5,7 +5,7 @@ Produces a single `reports/dashboard.html` with:
   - an all-time frequency bar chart (Chart.js from CDN)
   - a full number heatmap (every number shaded by how often it's drawn)
   - hot / cold (last 30 draws) and most-overdue panels
-  - today's suggested lines (one per strategy)
+  - next-draw suggested lines (one per strategy)
   - the 10 most recent draws
 
 All data is embedded as JSON, so the file works by just opening it in a
@@ -67,6 +67,7 @@ def _product_payload(name: str, scorecard: dict | None) -> dict:
         "overdue": s["most_overdue"],
         "recent": recent,
         "predictions": predictions,
+        "next_draw": product.next_draw_date().isoformat(),
         "ml": ml,
     }
 
@@ -318,7 +319,7 @@ keys.forEach((k,idx)=>{
         <div class="chartbox"><canvas id="chart-${k}"></canvas></div>
       </div>
       <div class="card col4">
-        <h3><span class="ic" style="background:var(--mint)"></span>Today's suggested lines</h3>
+        <h3><span class="ic" style="background:var(--mint)"></span>Suggested lines · next draw ${d.next_draw}</h3>
         <div class="pred">${predRows}</div>
       </div>
 

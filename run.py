@@ -127,7 +127,7 @@ def _report_section(name: str) -> str:
         "**Most overdue:** "
         + ", ".join(f"{n} ({g}d)" for n, g in s["most_overdue"]),
         "",
-        "### Suggested lines (one per strategy)",
+        f"### Suggested lines for the next draw ({p.next_draw_date()})",
         "",
         "| Strategy | Numbers |",
         "| --- | --- |",
