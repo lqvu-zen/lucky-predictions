@@ -1,15 +1,32 @@
 {
-  "generated": "2026-07-20T22:02:13.734458",
+  "generated": "2026-07-21T21:00:23.877055",
   "games": {
     "power_655": {
       "label": "Power 6/55",
-      "models": {},
+      "models": {
+        "gb": {
+          "scored": 1,
+          "mean_hits": 0.0,
+          "baseline_hits": 0.655,
+          "mean_brier": 0.097325,
+          "mean_brier_base": 0.09719,
+          "best_hits": 0
+        },
+        "logreg": {
+          "scored": 2,
+          "mean_hits": 0.0,
+          "baseline_hits": 0.655,
+          "mean_brier": 0.097576,
+          "mean_brier_base": 0.09719,
+          "best_hits": 0
+        }
+      },
       "next_prediction": {
-        "target_date": "2026-07-21",
+        "target_date": "2026-07-23",
         "by_model": {
           "logreg": [
             27,
-            45,
+            35,
             46,
             47,
             54,
@@ -18,14 +35,14 @@
           "gb": [
             12,
             27,
-            37,
-            41,
+            29,
             47,
-            49
+            52,
+            54
           ]
         }
       },
-      "total_scored": 0
+      "total_scored": 3
     },
     "power_645": {
       "label": "Power 6/45",

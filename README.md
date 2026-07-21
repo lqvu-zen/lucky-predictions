@@ -269,24 +269,26 @@ PC doesn't need to be on. Every day at **21:30 Vietnam time** (14:30 UTC) it:
 
 1. crawls the latest 6/55 and 6/45 draws,
 2. commits any new draws back into `data/*.jsonl`,
-3. builds the dashboard and uploads it as a downloadable **artifact**.
+3. builds the dashboard, uploads it as a downloadable **artifact**, and
+   publishes it to **GitHub Pages** at a live URL.
 
-To enable it:
+To enable it (one-time):
 
-1. Push the repo to GitHub (already done).
-2. In the repo: **Settings → Actions → General → Workflow permissions →**
-   select **Read and write permissions** (lets the job commit new data).
+1. **Settings → Actions → General → Workflow permissions →** select
+   **Read and write permissions** (lets the job commit new data).
+2. **Settings → Pages → Build and deployment → Source →** select
+   **GitHub Actions**.
 3. Go to the **Actions** tab, pick **daily-crawl**, and click **Run workflow**
    once to test it (or wait for the schedule).
 
-To view the dashboard: open the workflow run under the **Actions** tab and
-download the **vietlott-dashboard** artifact (contains `dashboard.html`).
+Your live dashboard will be at
+`https://YOUR_USERNAME.github.io/lucky-predictions/`. You can also grab the
+**lucky-dashboard** artifact from any run for an offline copy.
 
-> This is the private-friendly setup — the dashboard is an artifact, not a
-> public web page. A live GitHub Pages URL needs either a public repo or a
-> paid plan; if you switch to one of those later, I can add a Pages deploy.
-> Note: GitHub pauses scheduled workflows after ~60 days with no repo
-> activity — the daily commits keep it alive.
+> The repo is public, so the code and committed `data/` are visible to
+> anyone — that's expected for a public Pages site. GitHub pauses scheduled
+> workflows after ~60 days with no repo activity; the daily commits keep it
+> alive.
 
 ## Strategies (and why none of them "work")
 

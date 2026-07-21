@@ -3,7 +3,8 @@ name: daily-crawl
 # Runs the crawl in the cloud so you don't need your PC on.
 # - Fetches the latest Power 6/55 and 6/45 draws
 # - Commits new draws back into data/*.jsonl
-# - Builds the HTML dashboard and uploads it as a downloadable artifact
+# - Builds the HTML dashboard, uploads it as an artifact, and publishes it
+#   to GitHub Pages (repo is public)
 
 on:
   schedule:
@@ -12,7 +13,9 @@ on:
   workflow_dispatch: {}      # lets you run it manually from the Actions tab
 
 permissions:
-  contents: write            # allow committing updated data back to the repo
+  contents: write            # commit updated data back to the repo
+  pages: write               # deploy to GitHub Pages
+  id-token: write            # required by the Pages deploy action
 
 concurrency:
   group: daily-crawl
@@ -46,12 +49,33 @@ jobs:
             git push
           fi
 
+      - name: Assemble Pages site
+        run: |
+          mkdir -p _site
+          cp reports/dashboard.html _site/index.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
       - name: Upload dashboard + report artifact
         uses: actions/upload-artifact@v4
         with:
-          name: vietlott-dashboard
+          name: lucky-dashboard
           path: |
             reports/dashboard.html
             reports/latest.md
           retention-days: 30
           if-no-files-found: warn
+
+  deploy-pages:
+    needs: crawl
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
