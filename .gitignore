@@ -11,5 +11,6 @@ env/
 logs/
 reports/*.md
 reports/*.html
+reports/*.txt
 _site/
 /.claude/worktrees

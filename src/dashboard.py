@@ -28,6 +28,11 @@ try:
 except Exception:  # ml package optional
     load_scorecard = lambda: None  # noqa: E731
 
+try:
+    from ml import joint as _joint      # pure-Python, safe to import
+except Exception:
+    _joint = None
+
 
 def _product_payload(name: str, scorecard: dict | None) -> dict:
     product = get_product(name)
@@ -53,6 +58,18 @@ def _product_payload(name: str, scorecard: dict | None) -> dict:
         for d in reversed(draws[-10:])
     ]
     predictions = {k: v[0] for k, v in suggest_all(name, tickets=1, seed=seed).items()}
+
+    joint_data = None
+    if _joint is not None:
+        try:
+            gt = _joint.grid_transposed(product, draws)
+            ticket = _joint.predict_ticket(
+                _joint.empirical_grid(product, draws, smoothing=0.5), product)
+            mx = max((max(row) for row in gt), default=0) or 1.0
+            joint_data = {"gridT": [[round(x, 5) for x in row] for row in gt],
+                          "ticket": ticket, "max": mx}
+        except Exception:
+            joint_data = None
     return {
         "label": product.label,
         "range": {"min": product.min_value, "max": product.max_value},
@@ -68,6 +85,7 @@ def _product_payload(name: str, scorecard: dict | None) -> dict:
         "recent": recent,
         "predictions": predictions,
         "next_draw": product.next_draw_date().isoformat(),
+        "joint": joint_data,
         "ml": ml,
     }
 
@@ -175,6 +193,12 @@ HTML_TEMPLATE = r"""<!doctype html>
   .legend{display:flex; align-items:center; gap:8px; margin-top:12px; font-size:11px; color:var(--muted)}
   .legend .bar{flex:1; height:8px; border-radius:6px;
     background:linear-gradient(90deg,#2b4a7a,#4da6ff,#37e0a6,#f7c948,#ff5d6c)}
+  /* joint number x position heatmap */
+  .jrow{display:flex; align-items:center; gap:8px; margin-bottom:3px}
+  .jlab{width:26px; text-align:right; font-size:11px; color:var(--muted); font-family:"Space Grotesk"}
+  .jline{display:grid; flex:1; gap:1px}
+  .jcell{height:16px; border-radius:2px}
+  .jaxis{display:flex; justify-content:space-between; font-size:10px; color:var(--faint); margin:5px 0 0 34px}
 
   /* lists */
   table{width:100%; border-collapse:collapse; font-size:13.5px}
@@ -295,6 +319,28 @@ keys.forEach((k,idx)=>{
       </div>`;
   }
 
+  let jointCard = '';
+  if(d.joint){
+    const N=d.range.max, mx=d.joint.max, gt=d.joint.gridT, K=gt.length;
+    let rows='';
+    for(let pp=0; pp<K; pp++){
+      let line='';
+      for(let i=0;i<N;i++){
+        const v=gt[pp][i];
+        line+=`<div class="jcell" title="number ${i+1} at position p${pp+1}: ${(v*100).toFixed(1)}%" style="background:${heatColor(v/mx)}"></div>`;
+      }
+      rows+=`<div class="jrow"><div class="jlab">p${pp+1}</div><div class="jline" style="grid-template-columns:repeat(${N},1fr)">${line}</div></div>`;
+    }
+    jointCard=`
+      <div class="card col12">
+        <h3><span class="ic" style="background:var(--violet)"></span>Number × position map — P(each number lands at each ordered slot)</h3>
+        ${rows}
+        <div class="jaxis"><span>number 1</span><span>${N}</span></div>
+        <div class="row" style="margin-top:14px"><div class="tag">model pick</div>${balls(d.joint.ticket,null,true)}</div>
+        <div style="color:var(--faint);font-size:11px;margin-top:10px">Each row is one ordered position's distribution over the numbers. The diagonal band is the order-statistic law of a random draw — identical every time, so it's the best view but carries no edge.</div>
+      </div>`;
+  }
+
   const recent = d.recent.map(r=>`<tr>
       <td>${r.date}</td><td>#${r.id}</td>
       <td class="recent-nums">${r.main.map(pad).join(' ')}${r.bonus!=null?` <span class="b">| ${pad(r.bonus)}</span>`:''}</td>
@@ -330,6 +376,8 @@ keys.forEach((k,idx)=>{
         <div class="heat">${heat}</div>
         <div class="legend"><span>less</span><div class="bar"></div><span>more</span></div>
       </div>
+
+      ${jointCard}
 
       <div class="card col4">
         <h3><span class="ic" style="background:var(--hot)"></span>Hot · last 30 draws</h3>

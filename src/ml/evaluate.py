@@ -26,6 +26,7 @@ import numpy as np
 from config import get_product
 from ml import features as F
 from ml import model as M
+from ml.util import progress
 
 
 def _logloss(p, y, eps=1e-12):
@@ -66,6 +67,7 @@ def walk_forward(product_name: str, kind: str = "logreg",
         big += 1 if hits >= 4 else 0
         all_p.append(probs)
         all_y.append(yt)
+        progress(step + 1, len(test_set), f"{kind} backtest")
 
     n_tested = len(test_set)
     p = np.concatenate(all_p)

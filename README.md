@@ -114,6 +114,11 @@ Install the extra dependencies first:
 uv sync --extra ml
 ```
 
+**Convenience scripts (Windows):** double-click `train_all.bat` to
+train/evaluate every model on both games (saves `logs/train_all.log`), or
+`predict_all.bat` to print each model's next-draw prediction for both games
+(saves `reports/latest_predictions.txt`).
+
 Commands:
 
 ```bash
@@ -125,6 +130,14 @@ uv run python run.py ml-compare power_655 --models logreg,gb,rf
 
 # See which features a model leans on (add --permutation for a robust view)
 uv run python run.py ml-importance power_655 --model rf
+
+# Alternative framing — predict each ORDERED position (p1<p2<...<p6)
+uv run python run.py ml-predict-pos  power_655
+uv run python run.py ml-backtest-pos power_655
+
+# Richest framing — the full number×position grid P(number k at position p)
+uv run python run.py ml-predict-joint  power_655
+uv run python run.py ml-backtest-joint power_655
 
 # Predict the next scheduled draw and log it to the prediction ledger
 uv run python run.py ml-predict power_655
@@ -179,6 +192,29 @@ Every interval straddles the baseline. Adding features and stronger models
 changes nothing — there is no signal to find in a uniform draw, and now we
 can *prove* it rather than assume it. That measurement discipline is the
 real deliverable.
+
+**Alternative framing — positional / ordered model.** Instead of scoring each
+number independently, `ml-predict-pos` sorts each draw ascending
+(p1 < p2 < … < p6) and trains one regressor per *ordered position* to predict
+that position's value — then assembles a valid ascending ticket. Because
+order statistics have real structure (p1 is always small, p6 always large),
+this produces natural-looking tickets like `09 - 18 - 26 - 34 - 42 - 50` —
+essentially the mean of each position. `ml-backtest-pos` reports a
+per-position MAE (how well it fits each position's range) plus mean hits with
+a bootstrap CI; the CI still spans the random baseline, so it's a prettier
+ticket with the same non-edge. It's a nice contrast to the per-number view.
+
+**Richest framing — the joint number×position grid.** `ml-*-joint` estimates
+`P(number k lands at ordered position p)` — a full N×6 grid. It's the parent
+of the other two: a number's row summed over positions gives its overall
+appearance rate (≈ 6/N, the per-number model), and a column is a position's
+distribution over numbers (which the positional model summarised by its mean).
+The learned grid matches the closed-form order-statistic law
+`C(v-1,p-1)·C(N-v,k-p)/C(N,k)` to ~0.015, confirming it's just re-estimating a
+fixed distribution — same every draw, so no edge (the backtest CI spans the
+baseline). But it's the most visual: the dashboard renders it as a
+number×position heatmap with a clear diagonal band. See
+[docs/how-the-model-works.md](docs/how-the-model-works.md) §8.
 
 **Feature importance.** `ml-importance` shows which signals a model leans on
 (tree `feature_importances_`, or standardized coefficients for logistic

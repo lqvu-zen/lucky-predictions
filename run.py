@@ -21,6 +21,15 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+# Print UTF-8 regardless of the Windows console code page. Without this,
+# characters like →, ≈, — raise UnicodeEncodeError on cp1252 consoles (and
+# render as mojibake). Safe no-op on platforms that already use UTF-8.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 # make src/ importable
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
@@ -183,6 +192,42 @@ def cmd_ml_importance(args) -> None:
                                permutation=args.permutation)))
 
 
+def cmd_ml_backtest_joint(args) -> None:
+    from ml import joint
+    print()
+    print(joint.format_backtest(joint.backtest(args.product, test_draws=args.test)))
+
+
+def cmd_ml_predict_joint(args) -> None:
+    from ml import joint
+    e = joint.predict_next(args.product)
+    print(f"\n{e['product']} — joint number×position model, next draw {e['target_date']}:")
+    print("  ticket (per-position modes):", " - ".join(f"{n:02d}" for n in e["ticket"]))
+    print(f"  learned grid vs closed-form law: max abs diff = {e['grid_vs_theory_maxdiff']}")
+    print("\n(The grid is the fixed order-statistic law — great to visualize, no real edge.)")
+
+
+def cmd_ml_backtest_pos(args) -> None:
+    _need_ml()
+    from ml import positional
+    print()
+    for kind in (["ridge", "gb"] if args.model == "both" else [args.model]):
+        print(positional.format_backtest(
+            positional.backtest(args.product, kind=kind,
+                                test_draws=args.test, retrain_every=args.retrain)))
+        print()
+
+
+def cmd_ml_predict_pos(args) -> None:
+    _need_ml()
+    from ml import positional
+    e = positional.predict_next(args.product, kind=args.model)
+    print(f"\n{e['product']} — {e['model']} prediction for next draw {e['target_date']}:")
+    print("  ordered ticket:", " - ".join(f"{n:02d}" for n in e["ticket"]))
+    print("  raw position estimates:", e["raw"])
+    print("\n(Ordered framing makes prettier tickets, but still can't beat random odds.)")
+
+
 def cmd_ml_predict(args) -> None:
     _need_ml()
     from ml.predict_next import predict_next
@@ -328,6 +373,27 @@ def main() -> None:
     pmb.add_argument("--test", type=int, default=120, help="draws to evaluate")
     pmb.add_argument("--retrain", type=int, default=15, help="retrain cadence")
     pmb.set_defaults(func=cmd_ml_backtest)
+
+    pbj = sub.add_parser("ml-backtest-joint", help="joint number×position backtest")
+    pbj.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    pbj.add_argument("--test", type=int, default=120)
+    pbj.set_defaults(func=cmd_ml_backtest_joint)
+
+    ppj = sub.add_parser("ml-predict-joint", help="joint number×position next-draw ticket")
+    ppj.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    ppj.set_defaults(func=cmd_ml_predict_joint)
+
+    pbp = sub.add_parser("ml-backtest-pos", help="positional (ordered) model backtest")
+    pbp.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    pbp.add_argument("--model", default="ridge", choices=["ridge", "gb", "both"])
+    pbp.add_argument("--test", type=int, default=120)
+    pbp.add_argument("--retrain", type=int, default=20)
+    pbp.set_defaults(func=cmd_ml_backtest_pos)
+
+    ppp = sub.add_parser("ml-predict-pos", help="positional (ordered) next-draw ticket")
+    ppp.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    ppp.add_argument("--model", default="ridge", choices=["ridge", "gb"])
+    ppp.set_defaults(func=cmd_ml_predict_pos)
 
     pmc = sub.add_parser("ml-compare", help="compare models with bootstrap CIs")
     pmc.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")

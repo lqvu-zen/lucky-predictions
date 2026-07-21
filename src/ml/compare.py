@@ -19,6 +19,7 @@ import numpy as np
 from config import get_product
 from ml import features as F
 from ml import model as M
+from ml.util import progress
 
 
 def _walk(product, X, y, di, nums, kind, test_draws, retrain_every):
@@ -42,6 +43,7 @@ def _walk(product, X, y, di, nums, kind, test_draws, retrain_every):
         hits_per_draw.append(len(actual.intersection(top6)))
         all_p.append(probs)
         all_y.append(yt)
+        progress(step + 1, len(test_set), f"compare {kind}")
     return (np.array(hits_per_draw, float),
             np.concatenate(all_p), np.concatenate(all_y).astype(float))
 
