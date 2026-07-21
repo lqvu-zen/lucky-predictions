@@ -100,7 +100,8 @@ uv run python run.py backtest power_655
 
 An optional ML pipeline treats prediction as N binary questions — for each
 number, *what's the probability it appears in the next draw?* — then ranks
-the top 6. It exists to practice real ML engineering (leakage-safe features,
+the top 6. For a full walkthrough (with a worked example) see
+[docs/how-the-model-works.md](docs/how-the-model-works.md). It exists to practice real ML engineering (leakage-safe features,
 versioned models, walk-forward evaluation, a predict→score loop), not to
 beat the lottery. It won't: the harness is built to *measure* that honestly.
 
