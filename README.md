@@ -1,4 +1,4 @@
-# Vietlott Predictions
+# Lucky Predictions
 
 A small, self-contained project for **learning about web crawling and data
 analysis** using Vietnamese lottery (Vietlott) data. It automatically fetches
@@ -28,7 +28,7 @@ Inspired by [vietvudanh/vietlott-data](https://github.com/vietvudanh/vietlott-da
 ## Project layout
 
 ```
-vietlott-predictions/
+lucky-predictions/
 ├── run.py              # CLI entrypoint (crawl / analyze / predict / daily)
 ├── requirements.txt
 ├── src/
@@ -61,7 +61,7 @@ irm https://astral.sh/uv/install.ps1 | iex
 Then, from the project root:
 
 ```bash
-cd D:\Projects\vietlott-predictions
+cd D:\Projects\lucky-predictions
 uv sync           # creates .venv and installs dependencies from pyproject.toml
 ```
 

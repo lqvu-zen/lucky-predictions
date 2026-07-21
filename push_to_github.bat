@@ -10,7 +10,7 @@ REM ============================================================
 setlocal
 cd /d "%~dp0"
 
-set "REPONAME=vietlott-predictions"
+set "REPONAME=lucky-predictions"
 
 where git >nul 2>&1
 if errorlevel 1 (

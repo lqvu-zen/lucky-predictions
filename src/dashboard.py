@@ -209,7 +209,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   <div class="tabs" id="tabs"></div>
   <div id="main"></div>
 
-  <footer>Built with the vietlott-predictions project · numbers are for entertainment, not advice.</footer>
+  <footer>Built with the lucky-predictions project · numbers are for entertainment, not advice.</footer>
 </div>
 
 <script>

@@ -1,5 +1,5 @@
 [project]
-name = "vietlott-predictions"
+name = "lucky-predictions"
 version = "0.1.0"
 description = "Crawl, analyze, and (for fun) predict Vietlott Power 6/55 and 6/45 draws."
 readme = "README.md"

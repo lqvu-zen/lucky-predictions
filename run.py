@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Vietlott predictions — command-line entrypoint.
+"""Lucky predictions — command-line entrypoint.
 
 Usage:
     python run.py crawl                 # crawl both games (latest page)
