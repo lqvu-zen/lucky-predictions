@@ -129,14 +129,23 @@ uv run python run.py dashboard
 evaluate both models on both games with live progress, or `predict_all.bat`
 to print every model's next-draw prediction.
 
-## How predictions are scored
+## How predictions are scored — the leaderboard
 
-Both models output a 6-number ticket, so scoring is by **hits** — how many of
-the ticket's numbers actually came up (0–6) — averaged over many draws and
-compared to the random baseline `6×6/N` (**0.655** for 6/55, **0.800** for
-6/45). Backtests add a **bootstrap 95% CI** so a lucky run can't masquerade as
-signal; the live loop logs each prediction *before* the draw and scores it
-after, accumulating the dashboard scorecard. Every model sits on the baseline.
+Every predictor — all 5 for-fun strategies **and** all position-based models —
+logs one ticket per draw, and each is scored two ways once the real result
+arrives:
+
+- **Hits** — number overlap: how many of the ticket's 6 numbers came up (0–6).
+  Random baseline `6×6/N` (0.655 for 6/55, 0.800 for 6/45).
+- **Pos-hits** — position accuracy: how many are the *correct number at the
+  correct sorted position* (`ticket[i] == actual[i]`). Harder; the best a
+  mode-guesser can average is shown as the reference baseline.
+
+The dashboard ranks all predictors into a **leaderboard** by mean pos-hits, so
+you can see who's ahead. The honest catch: the leader keeps reshuffling and
+over enough draws every predictor converges — there is no real edge, so
+"who's best" is luck. Backtests (`ml-backtest-*`) add bootstrap 95% CIs that
+confirm each model's CI straddles the baseline.
 
 ## Draw schedule & automation
 

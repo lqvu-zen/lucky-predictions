@@ -193,12 +193,34 @@ HTML_TEMPLATE = r"""<!doctype html>
   .legend{display:flex; align-items:center; gap:8px; margin-top:12px; font-size:11px; color:var(--muted)}
   .legend .bar{flex:1; height:8px; border-radius:6px;
     background:linear-gradient(90deg,#2b4a7a,#4da6ff,#37e0a6,#f7c948,#ff5d6c)}
+  /* consensus numbers */
+  .cnums{display:flex; flex-wrap:wrap; gap:6px; margin-top:4px}
+  .cnum{display:inline-flex; flex-direction:column; align-items:center; justify-content:center;
+    width:40px; height:42px; border-radius:10px; font-weight:700; color:#0b0f1a; font-size:14px;
+    font-family:"Space Grotesk"}
+  .cnum small{font-size:9px; opacity:.8; font-weight:600}
   /* joint number x position heatmap */
   .jrow{display:flex; align-items:center; gap:8px; margin-bottom:3px}
   .jlab{width:26px; text-align:right; font-size:11px; color:var(--muted); font-family:"Space Grotesk"}
   .jline{display:grid; flex:1; gap:1px}
   .jcell{height:16px; border-radius:2px}
   .jaxis{display:flex; justify-content:space-between; font-size:10px; color:var(--faint); margin:5px 0 0 34px}
+  /* prediction history */
+  .hscroll{max-height:420px; overflow-y:auto; margin:2px -4px 10px 0; padding-right:8px}
+  .hscroll::-webkit-scrollbar{width:8px}
+  .hscroll::-webkit-scrollbar-thumb{background:var(--card-brd); border-radius:8px}
+  .hdraw{border:1px solid var(--card-brd); border-radius:12px; padding:12px 14px; margin-bottom:12px}
+  .hhead{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px}
+  .hdate{font-family:"Space Grotesk"; font-weight:700; font-size:13px}
+  .tk{display:inline-flex; gap:3px}
+  .tkb{display:inline-flex; align-items:center; justify-content:center; width:24px; height:22px;
+    border-radius:5px; font-size:11px; font-weight:700; background:#20293b; color:var(--muted); border:1px solid var(--line)}
+  .tkb.x{background:var(--mint); color:#08110c}          /* correct pos */
+  .tkb.o{background:rgba(247,201,72,.22); color:var(--gold); border-color:rgba(247,201,72,.4)} /* right number */
+  .htab{width:100%; border-collapse:collapse; font-size:12px}
+  .htab td{padding:4px 6px; border-bottom:1px solid var(--line)}
+  .htab td:first-child{color:var(--muted); white-space:nowrap}
+  .sc{font-family:"Space Grotesk"; font-weight:700}
 
   /* lists */
   table{width:100%; border-collapse:collapse; font-size:13.5px}
@@ -266,6 +288,18 @@ function rowsTable(list, cls, unit){
     <td style="width:38%"><div class="mini" style="width:${Math.max(8,v/max*100)}%"></div></td>
   </tr>`).join('');
 }
+// small balls for a ticket, coloured vs the actual draw:
+//  green = correct number at correct sorted position, amber = right number
+//  wrong position, plain = miss
+function ticketBalls(ticket, actual){
+  const act = actual.slice().sort((a,b)=>a-b);
+  const tik = ticket.slice().sort((a,b)=>a-b);
+  const set = new Set(act);
+  return `<span class="tk">` + tik.map((v,i)=>{
+    const cls = (v===act[i]) ? 'x' : (set.has(v) ? 'o' : '');
+    return `<span class="tkb ${cls}">${pad(v)}</span>`;
+  }).join('') + `</span>`;
+}
 
 const tabs = document.getElementById('tabs');
 const main = document.getElementById('main');
@@ -297,25 +331,66 @@ keys.forEach((k,idx)=>{
   if(d.ml){
     const m = d.ml;
     const np = m.next_prediction;
-    const modelRows = Object.entries(m.models||{}).map(([k,v])=>{
-      const edge = v.mean_hits - v.baseline_hits;
-      const col = Math.abs(edge)<0.2 ? 'var(--muted)' : (edge>0?'var(--mint)':'var(--hot)');
-      return `<tr><td><b>${k}</b></td><td>${v.scored}</td>
-        <td>${v.mean_hits.toFixed(2)}</td>
-        <td style="color:var(--faint)">${v.baseline_hits.toFixed(2)}</td>
-        <td style="color:${col}">${edge>=0?'+':''}${edge.toFixed(2)}</td>
-        <td>${v.best_hits}</td></tr>`;
+    // leaderboard: rank every predictor by the k/6 position score, then hits
+    const ranked = Object.entries(m.models||{})
+      .sort((a,b)=> (b[1].mean_pos_score - a[1].mean_pos_score) || (b[1].mean_hits - a[1].mean_hits));
+    const rows = ranked.map(([k,v],i)=>{
+      const isC = k==='consensus';
+      const lead = i===0 ? 'style="background:rgba(55,224,166,.10)"' : (isC?'style="background:rgba(247,201,72,.10)"':'');
+      const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';
+      const pct = (v.mean_pos_score*100).toFixed(1);
+      return `<tr ${lead}><td>${medal}</td><td>${isC?'⭐ ':''}<b${isC?' style="color:var(--gold)"':''}>${k}</b></td><td>${v.scored}</td>
+        <td><b>${v.mean_pos_score.toFixed(3)}</b> <span style="color:var(--faint)">(${pct}%)</span></td>
+        <td style="color:var(--muted)">${v.mean_hits.toFixed(2)}</td>
+        <td style="color:var(--faint)">${v.best_pos_hits}/6</td></tr>`;
     }).join('');
     const nextLines = np ? Object.entries(np.by_model).map(([k,line])=>
         `<div class="row"><div class="tag">${k}</div>${balls(line,null,true)}</div>`).join('') : '';
     const scored = m.total_scored||0;
     mlCard = `
       <div class="card col12">
-        <h3><span class="ic" style="background:var(--violet)"></span>Model scorecard ${scored?`· ${scored} predictions scored`:'· awaiting first results'}</h3>
-        ${modelRows ? `<table><thead><tr><th>Model</th><th>Scored</th><th>Mean hits</th><th>Baseline</th><th>Diff</th><th>Best</th></tr></thead><tbody>${modelRows}</tbody></table>`
-          : `<div style="color:var(--muted);font-size:13px">No predictions have been scored yet. After the next draw is crawled, results appear here — expected to sit on the baseline.</div>`}
-        ${np ? `<h3 style="margin-top:18px"><span class="ic" style="background:var(--mint)"></span>Next-draw predictions · ${np.target_date}</h3><div class="pred">${nextLines}</div>` : ''}
-        <div style="color:var(--faint);font-size:11px;margin-top:12px">Diff = mean hits minus the random baseline. Values hovering near zero mean the model has no edge — the expected, honest result.</div>
+        <h3><span class="ic" style="background:var(--violet)"></span>Leaderboard ${scored?`· ${scored} predictions scored`:'· awaiting first results'}</h3>
+        ${rows ? `<table><thead><tr><th>#</th><th>Predictor</th><th>Scored</th><th>Score (k/6)</th><th>Hits</th><th>Best</th></tr></thead><tbody>${rows}</tbody></table>
+          <div style="color:var(--faint);font-size:11px;margin-top:10px"><b>Score = k / 6</b>, where k = correct number at the correct sorted position, averaged over scored draws (e.g. actual 1-2-3-4-5-6 vs guess 1-19-29-37-36-55 scores 1/6 ≈ 0.167). Best-possible if you always guessed each position's mode ≈ <b>${(m.pos_baseline_score||0).toFixed(3)}</b>. Hits = number overlap. The leader is luck: over enough draws every predictor converges — there is no real edge.</div>`
+          : `<div style="color:var(--muted);font-size:13px">No predictions scored yet. After the next draw is crawled and scored, the ranking appears here.</div>`}
+        ${np && np.consensus ? (()=>{
+          const maxV = np.consensus[0][1];
+          const chips = np.consensus.slice(0,12).map(([num,c])=>
+            `<span class="cnum" style="background:${heatColor(c/maxV)}" title="${c} of ${np.n_models} predictors">${pad(num)}<small>${c}</small></span>`).join('');
+          return `<h3 style="margin-top:18px"><span class="ic" style="background:var(--gold)"></span>Consensus for next draw · ${np.target_date}</h3>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Top-6 by votes: ${balls(np.consensus_ticket,null,true)}</div>
+            <div class="cnums">${chips}</div>
+            <div style="color:var(--faint);font-size:11px;margin-top:8px">Numbers the most predictors (of ${np.n_models}) agree on. The small figure is the vote count. Consensus is just aggregation — it still can't beat the odds.</div>`;
+        })() : ''}
+        ${np ? `<h3 style="margin-top:18px"><span class="ic" style="background:var(--mint)"></span>Each predictor · ${np.target_date}</h3><div class="pred">${nextLines}</div>` : ''}
+      </div>`;
+  }
+
+  let histCard = '';
+  if(d.ml && (d.ml.history||[]).length){
+    const draws = d.ml.history.map(h=>{
+      const k = h.actual.length;
+      const rows = h.preds.map(pr=>{
+        const isC = pr.model==='consensus';
+        return `<tr ${isC?'style="background:rgba(247,201,72,.14)"':''}>
+        <td>${isC?'⭐ ':''}<b${isC?' style="color:var(--gold)"':'' }>${pr.model}</b></td>
+        <td>${ticketBalls(pr.ticket, h.actual)}</td>
+        <td class="sc">${pr.pos}/${k}</td>
+        <td style="color:var(--muted)">${pr.hits} hits</td></tr>`;}).join('');
+      return `<div class="hdraw">
+        <div class="hhead"><span class="hdate">${h.date}</span>
+          <span style="color:var(--faint);font-size:11px">actual</span>${balls(h.actual,null,true)}</div>
+        <table class="htab"><tbody>${rows}</tbody></table>
+      </div>`;
+    }).join('');
+    histCard = `
+      <div class="card col12">
+        <h3><span class="ic" style="background:var(--gold)"></span>Past predictions vs actual result</h3>
+        <div class="hscroll">${draws}</div>
+        <div style="color:var(--faint);font-size:11px">
+          <span style="color:var(--mint)">green</span> = correct number at the correct sorted position ·
+          <span style="color:var(--gold)">amber</span> = right number, wrong position · score = correct-position / 6.
+        </div>
       </div>`;
   }
 
@@ -370,6 +445,8 @@ keys.forEach((k,idx)=>{
       </div>
 
       ${mlCard}
+
+      ${histCard}
 
       <div class="card col12">
         <h3><span class="ic" style="background:var(--violet)"></span>Number heatmap — every number, shaded by how often it's drawn</h3>

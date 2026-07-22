@@ -256,6 +256,34 @@ def _run_ml_loop(verbose=True):
             if verbose:
                 print(f"[predict] {name} {model} -> {target}: {e['ticket']}")
 
+        # also log the for-fun heuristic strategies so they're evaluated too
+        seed = int(get_product(name).next_draw_date().strftime("%Y%m%d"))
+        allsug = predict.suggest_all(name, tickets=1, seed=seed)
+        for strat, lines in allsug.items():
+            model = f"fun-{strat}"
+            if (name, model, target) in pending:
+                continue
+            ledger.append({"game": name, "target_date": target,
+                           "model": model, "version": version, "ticket": lines[0]})
+
+        # consensus: the top-k numbers by vote across every other predictor for
+        # this draw, saved as its own prediction so it's scored too
+        if (name, "consensus", target) not in pending:
+            k = get_product(name).main_count
+            votes: dict[int, int] = {}
+            for e in ledger.load():
+                if (e["game"] == name and e["target_date"] == target
+                        and e.get("model") != "consensus" and not e.get("scored")):
+                    for num in (e.get("ticket") or []):
+                        votes[num] = votes.get(num, 0) + 1
+            if votes:
+                top = sorted(votes.items(), key=lambda kv: (-kv[1], kv[0]))[:k]
+                ticket = sorted(int(n) for n, _ in top)
+                ledger.append({"game": name, "target_date": target,
+                               "model": "consensus", "version": version, "ticket": ticket})
+                if verbose:
+                    print(f"[predict] {name} consensus -> {target}: {ticket}")
+
     return score.rebuild_scorecard()
 
 

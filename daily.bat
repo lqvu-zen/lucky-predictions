@@ -12,5 +12,6 @@ if not exist "logs" mkdir "logs"
 
 echo. >> "logs\daily.log"
 echo [%date% %time%] starting daily run >> "logs\daily.log"
-uv run python run.py daily >> "logs\daily.log" 2>&1
+REM --extra ml pulls in numpy/scikit-learn so the predict->score loop runs
+uv run --extra ml python run.py daily >> "logs\daily.log" 2>&1
 echo [%date% %time%] finished >> "logs\daily.log"
