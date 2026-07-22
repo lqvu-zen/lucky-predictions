@@ -152,16 +152,20 @@ confirm each model's CI straddles the baseline.
 Draws (Vietnam time, encoded in `config.py`): **6/55 Tue/Thu/Sat 18:00**,
 **6/45 Wed/Fri/Sun 18:00**. A run after 18:00 catches that night's result.
 
-**Local (Windows), 3 double-clicks:**
+**Cloud (GitHub Actions) — the main pipeline.** `.github/workflows/daily.yml`
+runs the whole thing nightly at **19:00 Vietnam time** (12:00 UTC), soon after
+the draw: crawl → score → predict all models + consensus → commit `data/` and
+`predictions/` → publish the dashboard to GitHub Pages. Enable it via
+**Settings → Pages → Source → GitHub Actions** and **Settings → Actions →
+General → Workflow permissions → Read and write**.
+
+**Local (Windows) — optional / on-demand.**
 
 1. `setup.bat` — `uv sync` to build the environment.
-2. `install_schedule.bat` — registers the `LuckyDaily` task at **21:00**.
-3. `daily.bat` — the job itself (also runs on demand).
-
-**Cloud (GitHub Actions):** `.github/workflows/daily.yml` runs the whole
-pipeline nightly, commits new draws + predictions, and publishes the dashboard
-to GitHub Pages. Enable it via **Settings → Pages → Source → GitHub Actions**
-and **Settings → Actions → General → Workflow permissions → Read and write**.
+2. `daily.bat` — run the pipeline yourself whenever you want.
+3. `install_schedule.bat` — *optional* scheduled task (`LuckyDaily`). If you
+   rely on the cloud, leave it disabled: `schtasks /change /tn LuckyDaily /disable`
+   (or `schtasks /delete /tn LuckyDaily /f`).
 
 > The crawl must run where it can reach the lottery site directly.
 

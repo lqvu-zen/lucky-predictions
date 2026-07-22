@@ -9,8 +9,9 @@ name: daily-crawl
 
 on:
   schedule:
-    # 14:30 UTC = 21:30 Vietnam time (UTC+7). GitHub may delay scheduled runs.
-    - cron: "30 14 * * *"
+    # 12:00 UTC = 19:00 Vietnam time (UTC+7) — soon after the 18:00 draw.
+    # GitHub may delay scheduled runs by several minutes.
+    - cron: "0 12 * * *"
   workflow_dispatch: {}      # lets you run it manually from the Actions tab
 
 permissions:
