@@ -1,74 +1,111 @@
 {
-  "generated": "2026-07-21T16:00:01.317830",
+  "generated": "2026-07-22T19:57:23.439861",
   "games": {
     "power_655": {
       "label": "Power 6/55",
       "models": {
-        "gb": {
-          "scored": 1,
-          "mean_hits": 0.0,
+        "joint-grid": {
+          "scored": 6,
+          "mean_hits": 0.333,
           "baseline_hits": 0.655,
-          "mean_brier": 0.097325,
-          "mean_brier_base": 0.09719,
-          "best_hits": 0
+          "best_hits": 1
         },
-        "logreg": {
-          "scored": 2,
-          "mean_hits": 0.0,
+        "positional-gb": {
+          "scored": 6,
+          "mean_hits": 0.333,
           "baseline_hits": 0.655,
-          "mean_brier": 0.097576,
-          "mean_brier_base": 0.09719,
-          "best_hits": 0
+          "best_hits": 2
+        },
+        "positional-ridge": {
+          "scored": 6,
+          "mean_hits": 0.667,
+          "baseline_hits": 0.655,
+          "best_hits": 3
         }
       },
       "next_prediction": {
         "target_date": "2026-07-23",
         "by_model": {
-          "logreg": [
-            27,
-            35,
-            46,
-            47,
-            54,
-            55
+          "positional-ridge": [
+            9,
+            18,
+            26,
+            34,
+            42,
+            50
           ],
-          "gb": [
-            12,
-            27,
+          "positional-gb": [
+            9,
+            16,
+            25,
+            33,
+            42,
+            49
+          ],
+          "joint-grid": [
+            1,
+            11,
             29,
+            34,
             47,
-            52,
-            54
+            55
           ]
         }
       },
-      "total_scored": 3
+      "total_scored": 18
     },
     "power_645": {
       "label": "Power 6/45",
-      "models": {},
+      "models": {
+        "joint-grid": {
+          "scored": 6,
+          "mean_hits": 0.667,
+          "baseline_hits": 0.8,
+          "best_hits": 1
+        },
+        "positional-gb": {
+          "scored": 6,
+          "mean_hits": 0.667,
+          "baseline_hits": 0.8,
+          "best_hits": 2
+        },
+        "positional-ridge": {
+          "scored": 6,
+          "mean_hits": 1.0,
+          "baseline_hits": 0.8,
+          "best_hits": 2
+        }
+      },
       "next_prediction": {
-        "target_date": "2026-07-22",
+        "target_date": "2026-07-24",
         "by_model": {
-          "logreg": [
-            12,
-            30,
-            36,
-            38,
-            41,
-            42
+          "positional-ridge": [
+            7,
+            15,
+            21,
+            26,
+            33,
+            40
           ],
-          "gb": [
-            12,
+          "positional-gb": [
+            7,
             14,
-            17,
-            37,
-            43,
+            21,
+            26,
+            33,
+            40
+          ],
+          "joint-grid": [
+            1,
+            10,
+            22,
+            28,
+            34,
             45
           ]
         }
       },
-      "total_scored": 0
+      "total_scored": 18
     }
   }
 }
