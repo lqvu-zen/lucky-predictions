@@ -1,4 +1,4 @@
-"""Product configuration for Vietlott crawling and analysis.
+"""Product configuration for lottery crawling and analysis.
 
 Focused on the two jackpot games: Power 6/55 and Power 6/45 (Mega).
 Each draw result stores 7 numbers: the 6 main numbers plus 1 bonus
@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-# Vietlott draws are on Vietnam time (UTC+7, no daylight saving). Compute the
+# Draws are on Vietnam time (UTC+7, no daylight saving). Compute the
 # schedule against this fixed offset so it's correct anywhere it runs —
 # including GitHub Actions runners, which use UTC.
 VN_TZ = timezone(timedelta(hours=7))

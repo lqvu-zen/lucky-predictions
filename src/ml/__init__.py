@@ -1,4 +1,4 @@
-"""Machine-learning experiments for Vietlott prediction.
+"""Machine-learning experiments for lottery prediction.
 
 Everything here is an honest engineering exercise: because lottery draws
 are uniform and independent, models are expected to land on the random

@@ -1,4 +1,4 @@
-"""Generate a self-contained HTML dashboard from Vietlott draw data.
+"""Generate a self-contained HTML dashboard from the lottery draw data.
 
 Produces a single `reports/dashboard.html` with:
   - hero header + KPI cards (draw count, date range, latest draw)
@@ -40,10 +40,6 @@ def _product_payload(name: str, scorecard: dict | None) -> dict:
     if not draws:
         return {"label": product.label, "draws": 0}
 
-    # Seed the "for fun" suggested lines by the NEXT DRAW DATE, not today,
-    # so they stay locked for a given draw instead of reshuffling daily.
-    seed = int(product.next_draw_date().strftime("%Y%m%d"))
-
     ml = None
     if scorecard and name in scorecard.get("games", {}):
         ml = scorecard["games"][name]
@@ -57,6 +53,10 @@ def _product_payload(name: str, scorecard: dict | None) -> dict:
          "bonus": d["result"][-1] if len(d["result"]) > product.main_count else None}
         for d in reversed(draws[-10:])
     ]
+
+    # "for fun" heuristic lines, seeded by the next draw date so they stay
+    # locked for a given draw instead of reshuffling daily
+    seed = int(product.next_draw_date().strftime("%Y%m%d"))
     predictions = {k: v[0] for k, v in suggest_all(name, tickets=1, seed=seed).items()}
 
     joint_data = None
@@ -95,7 +95,7 @@ HTML_TEMPLATE = r"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vietlott Dashboard</title>
+<title>Lucky Predictions Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -226,7 +226,7 @@ HTML_TEMPLATE = r"""<!doctype html>
 <body>
 <div class="wrap">
   <div class="hero">
-    <h1>Vietlott Dashboard</h1>
+    <h1>Lucky Predictions Dashboard</h1>
     <div class="sub">Power 6/55 &amp; 6/45 &middot; generated __GENERATED__</div>
     <div class="pill"><span class="dot"></span>Lottery draws are random — stats describe the past and can't predict the future. For fun only.</div>
   </div>
@@ -290,7 +290,7 @@ keys.forEach((k,idx)=>{
       style="background:${heatColor(t)};color:${bright?'#0b0f1a':'#0b0f1a'}">${pad(n)}<small>${v}</small></div>`;
   }).join('');
 
-  const predRows = Object.entries(d.predictions).map(([s,line])=>
+  const predRows = Object.entries(d.predictions||{}).map(([s,line])=>
     `<div class="row"><div class="tag">${s}</div>${balls(line,null,true)}</div>`).join('');
 
   let mlCard = '';
@@ -299,23 +299,23 @@ keys.forEach((k,idx)=>{
     const np = m.next_prediction;
     const modelRows = Object.entries(m.models||{}).map(([k,v])=>{
       const edge = v.mean_hits - v.baseline_hits;
-      const col = Math.abs(edge)<0.15 ? 'var(--muted)' : (edge>0?'var(--mint)':'var(--hot)');
+      const col = Math.abs(edge)<0.2 ? 'var(--muted)' : (edge>0?'var(--mint)':'var(--hot)');
       return `<tr><td><b>${k}</b></td><td>${v.scored}</td>
         <td>${v.mean_hits.toFixed(2)}</td>
         <td style="color:var(--faint)">${v.baseline_hits.toFixed(2)}</td>
         <td style="color:${col}">${edge>=0?'+':''}${edge.toFixed(2)}</td>
-        <td>${v.mean_brier.toFixed(4)}</td></tr>`;
+        <td>${v.best_hits}</td></tr>`;
     }).join('');
     const nextLines = np ? Object.entries(np.by_model).map(([k,line])=>
         `<div class="row"><div class="tag">${k}</div>${balls(line,null,true)}</div>`).join('') : '';
     const scored = m.total_scored||0;
     mlCard = `
       <div class="card col12">
-        <h3><span class="ic" style="background:var(--violet)"></span>ML model scorecard ${scored?`· ${scored} predictions scored`:'· awaiting first results'}</h3>
-        ${modelRows ? `<table><thead><tr><th>Model</th><th>Scored</th><th>Mean hits</th><th>Baseline</th><th>Δ</th><th>Brier</th></tr></thead><tbody>${modelRows}</tbody></table>`
+        <h3><span class="ic" style="background:var(--violet)"></span>Model scorecard ${scored?`· ${scored} predictions scored`:'· awaiting first results'}</h3>
+        ${modelRows ? `<table><thead><tr><th>Model</th><th>Scored</th><th>Mean hits</th><th>Baseline</th><th>Diff</th><th>Best</th></tr></thead><tbody>${modelRows}</tbody></table>`
           : `<div style="color:var(--muted);font-size:13px">No predictions have been scored yet. After the next draw is crawled, results appear here — expected to sit on the baseline.</div>`}
-        ${np ? `<h3 style="margin-top:18px"><span class="ic" style="background:var(--mint)"></span>Next-draw prediction · ${np.target_date}</h3><div class="pred">${nextLines}</div>` : ''}
-        <div style="color:var(--faint);font-size:11px;margin-top:12px">Δ = mean hits minus the random baseline. Values hovering near zero mean the model has no edge — the expected, honest result.</div>
+        ${np ? `<h3 style="margin-top:18px"><span class="ic" style="background:var(--mint)"></span>Next-draw predictions · ${np.target_date}</h3><div class="pred">${nextLines}</div>` : ''}
+        <div style="color:var(--faint);font-size:11px;margin-top:12px">Diff = mean hits minus the random baseline. Values hovering near zero mean the model has no edge — the expected, honest result.</div>
       </div>`;
   }
 
@@ -365,7 +365,7 @@ keys.forEach((k,idx)=>{
         <div class="chartbox"><canvas id="chart-${k}"></canvas></div>
       </div>
       <div class="card col4">
-        <h3><span class="ic" style="background:var(--mint)"></span>Suggested lines · next draw ${d.next_draw}</h3>
+        <h3><span class="ic" style="background:var(--mint)"></span>For-fun lines · next draw ${d.next_draw}</h3>
         <div class="pred">${predRows}</div>
       </div>
 

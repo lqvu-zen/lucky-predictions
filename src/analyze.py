@@ -1,4 +1,4 @@
-"""Statistical analysis of Vietlott draw history.
+"""Statistical analysis of lottery draw history.
 
 All functions operate on the 6 MAIN numbers of each draw (the bonus
 number, stored as the 7th element, is ignored for these stats).

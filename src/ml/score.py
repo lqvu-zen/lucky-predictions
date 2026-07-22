@@ -1,23 +1,20 @@
 """Score logged predictions against actual results (the honest feedback loop).
 
-Flow:
-  1. `score_pending()` — for every ledger entry whose target draw now has a
-     real result (and isn't scored yet), compute how the prediction did:
-     hits (top-6 ∩ actual), Brier score and log-loss of the per-number
-     probabilities, and the same for the trivial base-rate predictor.
-     Results are appended to predictions/scored.jsonl and the ledger entry
-     is marked scored.
-  2. `rebuild_scorecard()` — aggregate scored.jsonl into a rolling scorecard
-     (per game + model) and attach the current pending prediction. Written
-     to predictions/scorecard.json for the dashboard to read.
+Both surviving models — positional (ordered) and joint number x position —
+produce a ticket (6 numbers), so scoring is by hits: how many of the ticket's
+numbers actually came up. Predictions are logged BEFORE the draw, then scored
+once the real result is crawled.
 
-No look-ahead: a prediction can only be scored once its draw has happened
-and been crawled, and it was logged before that.
+Flow:
+  1. score_pending()  — for every ledger entry whose draw now has a result,
+     compute hits (ticket ∩ actual), append to predictions/scored.jsonl and
+     mark the ledger entry scored.
+  2. rebuild_scorecard() — aggregate per game + model into a rolling scorecard
+     (mean hits vs the random baseline) for the dashboard.
 """
 from __future__ import annotations
 
 import json
-import math
 from datetime import datetime
 
 from analyze import load_draws
@@ -28,72 +25,50 @@ SCORED_PATH = PRED_DIR / "scored.jsonl"
 SCORECARD_PATH = PRED_DIR / "scorecard.json"
 
 
+def _ticket(entry: dict) -> list[int]:
+    # tolerate old per-number entries that used "top6"
+    return entry.get("ticket") or entry.get("top6") or []
+
+
 def _results_map(game: str) -> dict[str, list[int]]:
     product = get_product(game)
     return {d["date"]: d["main"] for d in load_draws(product)}
-
-
-def _brier_and_logloss(probs: dict, actual: set[int], product) -> tuple:
-    n = product.max_value
-    sq = 0.0
-    ll = 0.0
-    for k in range(1, n + 1):
-        p = float(probs.get(str(k), product.main_count / n))
-        y = 1.0 if k in actual else 0.0
-        sq += (p - y) ** 2
-        pc = min(max(p, 1e-12), 1 - 1e-12)
-        ll += -(y * math.log(pc) + (1 - y) * math.log(1 - pc))
-    return sq / n, ll / n
-
-
-def _append_scored(rows: list[dict]) -> None:
-    PRED_DIR.mkdir(parents=True, exist_ok=True)
-    with SCORED_PATH.open("a", encoding="utf-8") as f:
-        for r in rows:
-            f.write(json.dumps(r, ensure_ascii=False) + "\n")
-
-
-def _rewrite_ledger(entries: list[dict]) -> None:
-    with ledger.LEDGER_PATH.open("w", encoding="utf-8") as f:
-        for e in entries:
-            f.write(json.dumps(e, ensure_ascii=False) + "\n")
 
 
 def score_pending() -> list[dict]:
     entries = ledger.load()
     if not entries:
         return []
-    results_cache: dict[str, dict] = {}
+    cache: dict[str, dict] = {}
     newly = []
     for e in entries:
         if e.get("scored"):
             continue
         game = e["game"]
-        results = results_cache.setdefault(game, _results_map(game))
+        results = cache.setdefault(game, _results_map(game))
         actual_list = results.get(e["target_date"])
         if actual_list is None:
-            continue  # draw hasn't happened / not crawled yet
+            continue  # draw not available yet
         product = get_product(game)
         actual = set(actual_list[: product.main_count])
-        hits = len(actual.intersection(e["top6"]))
-        brier, ll = _brier_and_logloss(e.get("probs", {}), actual, product)
-        base = product.main_count / product.max_value
-        brier_base = sum((base - (1 if k in actual else 0)) ** 2
-                         for k in range(1, product.max_value + 1)) / product.max_value
-        row = {
+        ticket = _ticket(e)
+        hits = len(actual.intersection(ticket))
+        newly.append({
             "game": game, "model": e.get("model"), "version": e.get("version"),
-            "target_date": e["target_date"], "top6": e["top6"],
+            "target_date": e["target_date"], "ticket": ticket,
             "actual": sorted(actual), "hits": hits,
             "baseline_hits": product.main_count ** 2 / product.max_value,
-            "brier": round(brier, 6), "brier_base": round(brier_base, 6),
-            "logloss": round(ll, 6),
             "scored_at": datetime.now().isoformat(),
-        }
-        newly.append(row)
+        })
         e["scored"] = True
     if newly:
-        _append_scored(newly)
-        _rewrite_ledger(entries)
+        PRED_DIR.mkdir(parents=True, exist_ok=True)
+        with SCORED_PATH.open("a", encoding="utf-8") as f:
+            for r in newly:
+                f.write(json.dumps(r, ensure_ascii=False) + "\n")
+        with ledger.LEDGER_PATH.open("w", encoding="utf-8") as f:
+            for e in entries:
+                f.write(json.dumps(e, ensure_ascii=False) + "\n")
     return newly
 
 
@@ -119,20 +94,15 @@ def rebuild_scorecard() -> dict:
                 "scored": n,
                 "mean_hits": round(sum(s["hits"] for s in mr) / n, 3),
                 "baseline_hits": round(product.main_count ** 2 / product.max_value, 3),
-                "mean_brier": round(sum(s["brier"] for s in mr) / n, 6),
-                "mean_brier_base": round(sum(s["brier_base"] for s in mr) / n, 6),
                 "best_hits": max(s["hits"] for s in mr),
             }
-        # pending (unscored) predictions for the upcoming draw
         pending = [e for e in entries if e["game"] == name and not e.get("scored")]
         next_pred = None
         if pending:
             td = max(e["target_date"] for e in pending)
-            next_pred = {
-                "target_date": td,
-                "by_model": {e["model"]: e["top6"]
-                             for e in pending if e["target_date"] == td},
-            }
+            next_pred = {"target_date": td,
+                         "by_model": {e["model"]: _ticket(e)
+                                      for e in pending if e["target_date"] == td}}
         games[name] = {"label": product.label, "models": models,
                        "next_prediction": next_pred, "total_scored": len(rows)}
     card = {"generated": datetime.now().isoformat(), "games": games}

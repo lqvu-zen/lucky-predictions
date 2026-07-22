@@ -1,8 +1,8 @@
 @echo off
 REM ============================================================
-REM  Train + evaluate EVERY model on both games, with LIVE output.
-REM  Models train on the fly, so this runs each one's walk-forward
-REM  backtest / comparison - that is where the training happens.
+REM  Train + evaluate the models on both games, with LIVE output.
+REM  Models: positional (ordered) and joint number x position.
+REM  Models train on the fly, so this runs each walk-forward backtest.
 REM ============================================================
 chcp 65001 >nul
 setlocal
@@ -25,16 +25,10 @@ for %%G in (power_655 power_645) do (
     echo.
     echo #################### %%G ####################
     echo.
-    echo [1/4] per-number backtest: logreg + gb
-    uv run python run.py ml-backtest %%G --model both
-    echo.
-    echo [2/4] per-number comparison with CIs: logreg gb rf
-    uv run python run.py ml-compare %%G
-    echo.
-    echo [3/4] positional / ordered model: ridge + gb
+    echo [1/2] positional / ordered model: ridge + gb
     uv run python run.py ml-backtest-pos %%G --model both
     echo.
-    echo [4/4] joint number x position model
+    echo [2/2] joint number x position model
     uv run python run.py ml-backtest-joint %%G
 )
 

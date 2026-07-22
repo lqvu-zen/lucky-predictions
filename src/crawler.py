@@ -1,4 +1,4 @@
-"""Crawl Power 6/55 and 6/45 results from Vietlott's ajaxpro API.
+"""Crawl Power 6/55 and 6/45 results from the lottery's ajaxpro API.
 
 The public results page (vietlott.vn) loads draw history via an ashx
 endpoint that returns JSON containing an HTML fragment (a table of

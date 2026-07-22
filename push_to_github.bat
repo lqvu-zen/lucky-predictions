@@ -35,7 +35,7 @@ git config user.name  >nul 2>&1 || git config user.name  "Vu"
 git config user.email >nul 2>&1 || git config user.email "ktvn100@gmail.com"
 
 git add -A
-git commit -m "Initial commit: Vietlott crawler, analysis, prediction, daily automation"
+git commit -m "Initial commit: crawler, analysis, prediction, daily automation"
 
 where gh >nul 2>&1
 if %errorlevel%==0 (
