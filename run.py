@@ -150,13 +150,77 @@ def cmd_ml_predict_pos(args) -> None:
     print("\n(Ordered framing makes prettier tickets, but still can't beat random odds.)")
 
 
+def cmd_ml_backtest_gap(args) -> None:
+    _need_ml()
+    from ml import gap
+    print()
+    print(gap.format_backtest(gap.backtest(args.product, test_draws=args.test)))
+
+
+def cmd_ml_predict_gap(args) -> None:
+    _need_ml()
+    from ml import gap
+    e = gap.predict_next(args.product)
+    print(f"\n{e['product']} - gap/spacing model, next draw {e['target_date']}:")
+    print("  ticket:", _fmt_line(e["ticket"]))
+    print("  predicted gaps:", e["gaps"])
+    print("\n(Models the spacing between numbers - for fun, no real edge.)")
+
+
+def cmd_ml_backtest_chain(args) -> None:
+    _need_ml()
+    from ml import chain
+    print()
+    print(chain.format_backtest(chain.backtest(args.product, test_draws=args.test)))
+
+
+def cmd_ml_predict_chain(args) -> None:
+    _need_ml()
+    from ml import chain
+    e = chain.predict_next(args.product)
+    print(f"\n{e['product']} - conditional (autoregressive) model, next draw {e['target_date']}:")
+    print("  ticket:", _fmt_line(e["ticket"]))
+    print("\n(Each position predicted from the previous - for fun, no real edge.)")
+
+
+def cmd_ml_backtest_clf(args) -> None:
+    _need_ml()
+    from ml import perpos
+    print()
+    print(perpos.format_backtest(perpos.backtest(args.product, test_draws=args.test)))
+
+
+def cmd_ml_predict_clf(args) -> None:
+    _need_ml()
+    from ml import perpos
+    e = perpos.predict_next(args.product)
+    print(f"\n{e['product']} - per-position classifier, next draw {e['target_date']}:")
+    print("  ticket:", _fmt_line(e["ticket"]))
+    print("\n(A trained classifier per position - for fun, no real edge.)")
+
+
+def cmd_ml_backtest_sampler(args) -> None:
+    from ml import sampler
+    print()
+    print(sampler.format_backtest(sampler.backtest(args.product, test_draws=args.test)))
+
+
+def cmd_ml_predict_sampler(args) -> None:
+    from ml import sampler
+    e = sampler.predict_next(args.product)
+    print(f"\n{e['product']} - empirical position sampler, next draw {e['target_date']}:")
+    print("  ticket:", _fmt_line(e["ticket"]))
+    print("\n(Sampled from each position's real distribution - for fun, no real edge.)")
+
+
 def _run_ml_loop(verbose=True):
     """Score predictions whose draw has happened, then log a fresh prediction
     for the next draw of each game (positional ridge/gb + joint). Rebuilds and
     returns the scorecard. Requires the ML extras (positional)."""
     from datetime import datetime as _dt
 
-    from ml import joint, ledger, positional, score
+    from ml import (chain, gap, joint, ledger, perpos, positional, sampler,
+                    score)
 
     newly = score.score_pending()
     if verbose and newly:
@@ -181,9 +245,12 @@ def _run_ml_loop(verbose=True):
             if verbose:
                 print(f"[predict] {name} {model} -> {target}: {e['ticket']}")
 
-        model = "joint-grid"
-        if (name, model, target) not in pending:
-            e = joint.predict_next(name)
+        for mod, model in ((joint, "joint-grid"), (gap, "gap-ridge"),
+                           (chain, "chain-ridge"), (perpos, "perpos-clf"),
+                           (sampler, "sampler")):
+            if (name, model, target) in pending:
+                continue
+            e = mod.predict_next(name)
             ledger.append({"game": name, "target_date": e["target_date"],
                            "model": model, "version": version, "ticket": e["ticket"]})
             if verbose:
@@ -342,6 +409,42 @@ def main() -> None:
     ppj = sub.add_parser("ml-predict-joint", help="joint number x position next-draw ticket")
     ppj.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
     ppj.set_defaults(func=cmd_ml_predict_joint)
+
+    pbg = sub.add_parser("ml-backtest-gap", help="gap/spacing model backtest")
+    pbg.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    pbg.add_argument("--test", type=int, default=120)
+    pbg.set_defaults(func=cmd_ml_backtest_gap)
+
+    ppg = sub.add_parser("ml-predict-gap", help="gap/spacing next-draw ticket")
+    ppg.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    ppg.set_defaults(func=cmd_ml_predict_gap)
+
+    pbc = sub.add_parser("ml-backtest-chain", help="conditional (autoregressive) backtest")
+    pbc.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    pbc.add_argument("--test", type=int, default=120)
+    pbc.set_defaults(func=cmd_ml_backtest_chain)
+
+    ppc = sub.add_parser("ml-predict-chain", help="conditional (autoregressive) next-draw ticket")
+    ppc.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    ppc.set_defaults(func=cmd_ml_predict_chain)
+
+    pbcl = sub.add_parser("ml-backtest-clf", help="per-position classifier backtest")
+    pbcl.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    pbcl.add_argument("--test", type=int, default=120)
+    pbcl.set_defaults(func=cmd_ml_backtest_clf)
+
+    ppcl = sub.add_parser("ml-predict-clf", help="per-position classifier next-draw ticket")
+    ppcl.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    ppcl.set_defaults(func=cmd_ml_predict_clf)
+
+    pbs = sub.add_parser("ml-backtest-sampler", help="empirical position sampler backtest")
+    pbs.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    pbs.add_argument("--test", type=int, default=120)
+    pbs.set_defaults(func=cmd_ml_backtest_sampler)
+
+    pps = sub.add_parser("ml-predict-sampler", help="empirical position sampler next-draw ticket")
+    pps.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    pps.set_defaults(func=cmd_ml_predict_sampler)
 
     pml = sub.add_parser("ml-loop", help="score past predictions + predict next draw")
     pml.set_defaults(func=cmd_ml_loop)

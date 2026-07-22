@@ -1,28 +1,9 @@
 {
-  "generated": "2026-07-22T12:59:27.309332",
+  "generated": "2026-07-22T21:04:16.609405",
   "games": {
     "power_655": {
       "label": "Power 6/55",
-      "models": {
-        "joint-grid": {
-          "scored": 6,
-          "mean_hits": 0.333,
-          "baseline_hits": 0.655,
-          "best_hits": 1
-        },
-        "positional-gb": {
-          "scored": 6,
-          "mean_hits": 0.333,
-          "baseline_hits": 0.655,
-          "best_hits": 2
-        },
-        "positional-ridge": {
-          "scored": 6,
-          "mean_hits": 0.667,
-          "baseline_hits": 0.655,
-          "best_hits": 3
-        }
-      },
+      "models": {},
       "next_prediction": {
         "target_date": "2026-07-23",
         "by_model": {
@@ -49,33 +30,46 @@
             34,
             47,
             55
+          ],
+          "gap-ridge": [
+            8,
+            17,
+            24,
+            32,
+            40,
+            49
+          ],
+          "chain-ridge": [
+            9,
+            18,
+            26,
+            34,
+            42,
+            50
+          ],
+          "perpos-clf": [
+            3,
+            19,
+            28,
+            43,
+            45,
+            53
+          ],
+          "sampler": [
+            3,
+            20,
+            29,
+            42,
+            46,
+            51
           ]
         }
       },
-      "total_scored": 18
+      "total_scored": 0
     },
     "power_645": {
       "label": "Power 6/45",
-      "models": {
-        "joint-grid": {
-          "scored": 6,
-          "mean_hits": 0.667,
-          "baseline_hits": 0.8,
-          "best_hits": 1
-        },
-        "positional-gb": {
-          "scored": 6,
-          "mean_hits": 0.667,
-          "baseline_hits": 0.8,
-          "best_hits": 2
-        },
-        "positional-ridge": {
-          "scored": 6,
-          "mean_hits": 1.0,
-          "baseline_hits": 0.8,
-          "best_hits": 2
-        }
-      },
+      "models": {},
       "next_prediction": {
         "target_date": "2026-07-24",
         "by_model": {
@@ -102,10 +96,42 @@
             28,
             34,
             45
+          ],
+          "gap-ridge": [
+            7,
+            15,
+            21,
+            26,
+            33,
+            40
+          ],
+          "chain-ridge": [
+            7,
+            15,
+            21,
+            26,
+            33,
+            40
+          ],
+          "perpos-clf": [
+            3,
+            19,
+            24,
+            28,
+            38,
+            45
+          ],
+          "sampler": [
+            25,
+            32,
+            35,
+            38,
+            41,
+            43
           ]
         }
       },
-      "total_scored": 18
+      "total_scored": 0
     }
   }
 }

@@ -25,11 +25,23 @@ for %%G in (power_655 power_645) do (
     echo.
     echo #################### %%G ####################
     echo.
-    echo [1/2] positional / ordered model: ridge + gb
+    echo [1/4] positional / ordered model: ridge + gb
     uv run python run.py ml-backtest-pos %%G --model both
     echo.
-    echo [2/2] joint number x position model
+    echo [2/4] joint number x position model
     uv run python run.py ml-backtest-joint %%G
+    echo.
+    echo [3/6] gap / spacing model
+    uv run python run.py ml-backtest-gap %%G
+    echo.
+    echo [4/6] conditional / autoregressive model
+    uv run python run.py ml-backtest-chain %%G
+    echo.
+    echo [5/6] per-position classifier
+    uv run python run.py ml-backtest-clf %%G
+    echo.
+    echo [6/6] empirical position sampler
+    uv run python run.py ml-backtest-sampler %%G
 )
 
 echo.

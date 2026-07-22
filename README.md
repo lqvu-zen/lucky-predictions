@@ -26,19 +26,27 @@ automatically fetches daily draw results for **Power 6/55** and **Power 6/45
 5. **Dashboard** — a self-contained HTML page with a number heatmap, a
    number×position map, and the model scorecard.
 
-## The two models
+## The models
 
-Both reason about **where each number lands** in a draw sorted ascending
-(p1 < p2 < … < p6):
+All of them reason about **where each number lands** in a draw sorted
+ascending (p1 < p2 < … < p6):
 
-- **Positional (ordered)** — 6 regressors (`ridge` or `gb`), one per ordered
-  position, predict that position's value; the six become an ascending ticket.
-- **Joint number×position** — the full grid `P(number k at position p)`,
-  estimated by counting. It matches the closed-form order-statistic law, and
-  renders as a number×position heatmap on the dashboard.
+- **Positional (ordered)** — 6 regressors (`ridge`/`gb`), one per ordered
+  position, predict that position's value.
+- **Joint number×position** — the counted grid `P(number k at position p)`;
+  matches the closed-form order-statistic law and renders as a heatmap.
+- **Gap / spacing** — Ridge regressors on the gaps between consecutive numbers
+  (p1, p2−p1, …), reconstructed into a ticket by cumulative sum.
+- **Conditional (autoregressive)** — predicts p1, then each position from the
+  previous one, respecting the ascending order.
+- **Per-position classifier** — a LogisticRegression per position predicting
+  the number; the trained ML version of the joint grid.
+- **Empirical sampler** — samples each position from its real distribution
+  (varied but position-realistic tickets).
 
-Both land on the random baseline in evaluation — that's the honest result;
-the value is the pipeline and the measurement. See
+Plus the **for-fun heuristic lines** (`random / hot / cold / overdue /
+balanced`). Every model lands on the random baseline in evaluation — that's the
+honest result; the value is the pipeline and the measurement. See
 [docs/how-the-model-works.md](docs/how-the-model-works.md).
 
 ## Project layout
