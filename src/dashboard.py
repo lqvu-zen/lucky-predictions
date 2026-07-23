@@ -370,6 +370,16 @@ keys.forEach((k,idx)=>{
       </div>`;
   }
 
+  let trendCard = '';
+  if(d.ml && d.ml.trend && (d.ml.trend.labels||[]).length>1){
+    trendCard = `
+      <div class="card col12">
+        <h3><span class="ic" style="background:var(--cold)"></span>Accuracy trend · running score (k/6) over draws</h3>
+        <div class="chartbox"><canvas id="trend-${k}"></canvas></div>
+        <div style="color:var(--faint);font-size:11px;margin-top:8px">Each predictor's running mean position-score as draws accumulate. They wobble early, then converge toward the dashed mode-baseline (${(d.ml.pos_baseline_score||0).toFixed(3)}) — the "leader" keeps changing, which is exactly what no-edge looks like.</div>
+      </div>`;
+  }
+
   let histCard = '';
   if(d.ml && (d.ml.history||[]).length){
     const draws = d.ml.history.map(h=>{
@@ -507,6 +517,8 @@ keys.forEach((k,idx)=>{
 
       ${mlCard}
 
+      ${trendCard}
+
       ${histCard}
 
       <div class="card col12">
@@ -576,12 +588,32 @@ function drawBankroll(k){
         y:{ticks:{color:'#5f6b85',callback:v=>v+'M'},grid:{color:'rgba(255,255,255,.06)'},
            title:{display:true,text:'cumulative VND',color:'#5f6b85',font:{size:10}}}}}});
 }
+const trendPalette=['#f7c948','#ff5d6c','#4da6ff','#37e0a6','#9b6dff','#ff9f1c','#8cc4ff','#ff8a95','#7ee0bf','#c9a6ff','#ffd970','#6b7794','#e8ecf4'];
+function drawTrend(k){
+  const d=DATA[k], t=d.ml&&d.ml.trend;
+  if(!t||!(t.labels||[]).length||charts['trend-'+k]||!window.Chart) return;
+  const ctx=document.getElementById('trend-'+k); if(!ctx) return;
+  const base=(d.ml.pos_baseline_score)||0;
+  const ds=Object.entries(t.series).map(([m,arr],i)=>({
+    label:m, data:arr, borderColor:trendPalette[i%trendPalette.length],
+    backgroundColor:'transparent', borderWidth: m==='consensus'?3:1.5,
+    pointRadius:0, tension:.2, spanGaps:true}));
+  ds.push({label:'baseline', data:t.labels.map(()=>base), borderColor:'#5f6b85',
+    borderDash:[5,5], borderWidth:1, pointRadius:0});
+  charts['trend-'+k]=new Chart(ctx,{type:'line',
+    data:{labels:t.labels, datasets:ds},
+    options:{maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#93a0bd',boxWidth:10,font:{size:10}}},
+        tooltip:{callbacks:{label:it=>it.dataset.label+': '+(it.raw==null?'-':it.raw.toFixed(3))}}},
+      scales:{x:{ticks:{color:'#5f6b85',autoSkip:true,maxTicksLimit:8,font:{size:10}},grid:{display:false}},
+        y:{ticks:{color:'#5f6b85'},grid:{color:'rgba(255,255,255,.06)'},title:{display:true,text:'running k/6',color:'#5f6b85',font:{size:10}}}}}});
+}
 function activate(k){
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',keys[i]===k));
   document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+k));
-  drawChart(k); drawBankroll(k);
+  drawChart(k); drawBankroll(k); drawTrend(k);
 }
-window.addEventListener('load',()=>{drawChart(keys[0]); drawBankroll(keys[0]);});
+window.addEventListener('load',()=>{drawChart(keys[0]); drawBankroll(keys[0]); drawTrend(keys[0]);});
 </script>
 </body>
 </html>

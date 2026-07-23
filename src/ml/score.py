@@ -158,11 +158,29 @@ def rebuild_scorecard() -> dict:
         for h in history:
             h["preds"].sort(key=lambda x: (-x["pos"], -x["hits"]))
 
+        # trend: each predictor's running mean pos-score over draws (newest
+        # dates last), so the dashboard can show convergence toward baseline
+        k = product.main_count
+        dates = sorted({s["target_date"] for s in rows})
+        by_dm = {(s["target_date"], s["model"]): s for s in rows}
+        model_names = sorted({s["model"] for s in rows})
+        cum = {m: [0, 0] for m in model_names}  # [sum_pos_hits, count]
+        series = {m: [] for m in model_names}
+        for dt in dates:
+            for m in model_names:
+                r = by_dm.get((dt, m))
+                if r:
+                    cum[m][0] += r.get("pos_hits", 0)
+                    cum[m][1] += 1
+                series[m].append(round(cum[m][0] / cum[m][1] / k, 4)
+                                 if cum[m][1] else None)
+        trend = {"labels": dates, "series": series}
+
         games[name] = {"label": product.label, "models": models,
                        "next_prediction": next_pred, "total_scored": len(rows),
                        "pos_baseline": round(pos_base, 3),
                        "pos_baseline_score": round(pos_base / product.main_count, 4),
-                       "history": history}
+                       "history": history, "trend": trend}
     card = {"generated": datetime.now().isoformat(), "games": games}
     PRED_DIR.mkdir(parents=True, exist_ok=True)
     SCORECARD_PATH.write_text(json.dumps(card, ensure_ascii=False, indent=2),

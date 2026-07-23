@@ -8,7 +8,7 @@ the odds.
 
 - [x] 1. Uniformity test — `src/randomness.py`, `run.py uniformity`, dashboard card
 - [x] 2. Bankroll / EV simulator — `src/bankroll.py`, prize tiers in config, `run.py bankroll`, dashboard chart
-- [ ] 3. Accuracy trend over time
+- [x] 3. Accuracy trend over time — running k/6 per predictor in scorecard + dashboard line chart
 - [ ] 4. Test suite
 - [ ] 5. More games (Keno / Power 5/35)
 - [ ] 6. Notifications (Telegram)
