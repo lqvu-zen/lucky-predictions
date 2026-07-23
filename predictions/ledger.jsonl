@@ -184,3 +184,8 @@
 {"game": "power_645", "target_date": "2026-07-24", "model": "fun-balanced", "version": "2026-07-22T21:09:57", "ticket": [19, 24, 36, 37, 39, 44], "created_at": "2026-07-22T21:10:18.654844", "scored": false}
 {"game": "power_655", "target_date": "2026-07-23", "model": "consensus", "version": "2026-07-22T21:31:05", "ticket": [3, 9, 18, 29, 34, 42], "created_at": "2026-07-22T21:31:05.052521", "scored": false}
 {"game": "power_645", "target_date": "2026-07-24", "model": "consensus", "version": "2026-07-22T21:31:05", "ticket": [7, 15, 21, 26, 33, 40], "created_at": "2026-07-22T21:31:05.066186", "scored": false}
+{"game": "power_655", "target_date": "2026-07-25", "model": "positional-ridge", "version": "2026-07-23T13:26:56", "ticket": [8, 18, 26, 34, 42, 50], "created_at": "2026-07-23T13:26:56.699089", "scored": false}
+{"game": "power_655", "target_date": "2026-07-25", "model": "positional-gb", "version": "2026-07-23T13:26:56", "ticket": [9, 16, 25, 33, 42, 49], "created_at": "2026-07-23T13:27:00.323287", "scored": false}
+{"game": "power_655", "target_date": "2026-07-25", "model": "joint-grid", "version": "2026-07-23T13:26:56", "ticket": [1, 11, 29, 34, 47, 55], "created_at": "2026-07-23T13:27:00.334377", "scored": false}
+{"game": "power_655", "target_date": "2026-07-25", "model": "gap-ridge", "version": "2026-07-23T13:26:56", "ticket": [8, 17, 25, 33, 41, 49], "created_at": "2026-07-23T13:27:00.522680", "scored": false}
+{"game": "power_655", "target_date": "2026-07-25", "model": "chain-ridge", "version": "2026-07-23T13:26:56", "ticket": [8, 18, 26, 34, 42, 50], "created_at": "2026-07-23T13:27:00.705350", "scored": false}
