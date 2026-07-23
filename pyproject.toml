@@ -17,6 +17,14 @@ ml = [
     "scikit-learn>=1.4",
     "pandas>=2.0",
 ]
+# tests — install with:  uv sync --extra ml --extra dev
+dev = [
+    "pytest>=8",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
 
 [tool.uv]
 package = false

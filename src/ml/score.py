@@ -30,6 +30,18 @@ def _ticket(entry: dict) -> list[int]:
     return entry.get("ticket") or entry.get("top6") or []
 
 
+def hits_and_pos(ticket, actual_main, k: int) -> tuple[int, int]:
+    """(number-overlap hits, position-accuracy hits) for a ticket vs actual.
+
+    pos_hits = count of correct number at the correct sorted position.
+    """
+    a = sorted(actual_main[:k])
+    t = sorted(ticket)
+    hits = len(set(a) & set(t))
+    pos = sum(1 for i in range(k) if i < len(t) and t[i] == a[i])
+    return hits, pos
+
+
 def _results_map(game: str) -> dict[str, list[int]]:
     product = get_product(game)
     return {d["date"]: d["main"] for d in load_draws(product)}
@@ -52,13 +64,8 @@ def score_pending() -> list[dict]:
         product = get_product(game)
         k = product.main_count
         actual_sorted = sorted(actual_list[:k])
-        actual = set(actual_sorted)
         ticket = _ticket(e)
-        ticket_sorted = sorted(ticket)
-        hits = len(actual.intersection(ticket))
-        # position accuracy: correct number at the correct sorted position
-        pos_hits = sum(1 for i in range(k)
-                       if i < len(ticket_sorted) and ticket_sorted[i] == actual_sorted[i])
+        hits, pos_hits = hits_and_pos(ticket, actual_list, k)
         newly.append({
             "game": game, "model": e.get("model"), "version": e.get("version"),
             "target_date": e["target_date"], "ticket": ticket,

@@ -30,7 +30,7 @@ uv run python run.py ml-loop                         # score past predictions + 
 uv run python run.py daily                           # crawl + analyze + report + loop + dashboard
 ```
 
-There is **no test suite, linter config, or CI**. Verify changes by running the commands above.
+Tests live in `tests/` (pytest). Run with `uv sync --extra ml --extra dev` then `uv run pytest`; `.github/workflows/tests.yml` runs them on push. They cover the fragile bits: HTML parsing, the draw schedule, scoring math, model ticket validity, and the stats/bankroll sanity. Also verify behaviour by running the CLI commands above.
 
 Product keys are `power_655` and `power_645` everywhere (CLI args, `PRODUCTS` dict). Crawling requires direct network access to `vietlott.vn`; analysis and prediction work offline against the seeded `data/*.jsonl`.
 
