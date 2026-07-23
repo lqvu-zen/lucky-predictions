@@ -24,6 +24,7 @@ from config import PRODUCTS, REPORTS_DIR, get_product
 from predict import suggest_all
 import randomness
 import bankroll
+import jackpot
 
 try:
     from ml.score import load_scorecard
@@ -90,6 +91,7 @@ def _product_payload(name: str, scorecard: dict | None) -> dict:
         "joint": joint_data,
         "randomness": randomness.summary(name),
         "bankroll": bankroll.simulate(name),
+        "jackpot": jackpot.summary(name),
         "ml": ml,
     }
 
@@ -430,6 +432,23 @@ keys.forEach((k,idx)=>{
       </div>`;
   }
 
+  let jackCard = '';
+  if(d.jackpot){
+    const j = d.jackpot;
+    const bil = n => (n/1e9).toFixed(0)+'B';
+    jackCard = `
+      <div class="card col12">
+        <h3><span class="ic" style="background:var(--gold)"></span>How long to win the jackpot?</h3>
+        <div class="kpis">
+          <div class="kpi"><div class="l">Odds per line</div><div class="n small">1 in ${j.one_in.toLocaleString()}</div></div>
+          <div class="kpi"><div class="l">Expected wait</div><div class="n">${j.expected_years.toLocaleString()} yrs</div></div>
+          <div class="kpi"><div class="l">Expected spend to win once</div><div class="n small">${bil(j.expected_cost)} VND</div></div>
+          <div class="kpi"><div class="l">vs the jackpot</div><div class="n">${j.cost_vs_jackpot}×</div></div>
+        </div>
+        <div style="color:var(--faint);font-size:11px;margin-top:10px">Buying one line every draw, you'd wait ~${j.expected_years.toLocaleString()} years and spend ~${bil(j.expected_cost)} VND to win the jackpot once on average — about <b>${j.cost_vs_jackpot}×</b> the prize itself. You're ~<b>${j.lightning_ratio}×</b> more likely to be struck by lightning this year than to win with a single line.</div>
+      </div>`;
+  }
+
   let bankCard = '';
   if(d.bankroll && d.bankroll.draws){
     const b = d.bankroll;
@@ -541,6 +560,8 @@ keys.forEach((k,idx)=>{
         <h3><span class="ic" style="background:var(--gold)"></span>Most overdue</h3>
         <table><tbody>${rowsTable(d.overdue,'over','d')}</tbody></table>
       </div>
+
+      ${jackCard}
 
       ${bankCard}
 

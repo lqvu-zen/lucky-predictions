@@ -10,8 +10,16 @@ the odds.
 - [x] 2. Bankroll / EV simulator — `src/bankroll.py`, prize tiers in config, `run.py bankroll`, dashboard chart
 - [x] 3. Accuracy trend over time — running k/6 per predictor in scorecard + dashboard line chart
 - [x] 4. Test suite — `tests/` (pytest), `dev` extra, `.github/workflows/tests.yml`
-- [ ] 5. More games (Keno / Power 5/35)
-- [ ] 6. Notifications (Telegram)
+- ~~5. More games (Keno / Power 5/35)~~ — dropped (not needed)
+- ~~6. Notifications (Telegram)~~ — dropped (not needed)
+
+Round two:
+
+- [x] 7. Jackpot expectation — `src/jackpot.py`, `run.py jackpot`, dashboard card
+- [ ] 8. Interactive ticket EV calculator (type 6 numbers → odds + EV)
+- [ ] 9. Meta-learner (stacking) predictor — learn per-predictor weights
+- [ ] 10. Calibration curve for the joint grid
+- [ ] 11. "Does more data help?" — score vs training-window size
 
 ---
 
@@ -75,32 +83,40 @@ whole "no edge" story.
 
 ---
 
-## 5. More games (config-only-ish)  ·  small
+## ~~5. More games (Keno / Power 5/35)~~ — dropped
 
-**Goal:** add Keno and/or Power 5/35.
+## ~~6. Notifications (Telegram)~~ — dropped
 
-**Build:**
-- Add `Product` entries in `config.py` (endpoint key, range, main_count,
-  draw schedule). Keno needs its own request/parse shape (many draws/day).
-- Verify the crawler parse for the new response; seed some history.
+Both dropped as not needed. Kept here only as a record; delete if you like.
 
 ---
 
-## 6. Notifications  ·  small, needs a secret
+## 7. Jackpot expectation (reality check)  ·  small
 
-**Goal:** get the daily prediction + last result without opening the dashboard.
+Exact expectation (no sim needed): odds = 1 / C(N, k); expected draws to win =
+C(N, k); expected years = that / draws-per-year; expected spend = that ×
+ticket cost; plus a relatable comparison (e.g. lightning). Dashboard card +
+`run.py jackpot`.
 
-**Build:**
-- `src/notify.py`: send a message (Telegram bot is simplest) with the next
-  draw's consensus + per-model picks and the latest actual result.
-- A workflow step after `daily`, gated on a `TELEGRAM_TOKEN` / `CHAT_ID`
-  secret (skips cleanly if unset).
+## 8. Interactive ticket EV calculator  ·  small
+
+Client-side: user types 6 numbers, dashboard shows the hypergeometric odds of
+each prize tier and the expected value of the line (deeply negative).
+
+## 9. Meta-learner (stacking)  ·  medium
+
+Learn weights per predictor from past pos-scores; add as a 13th predictor.
+Expected to overfit noise and fall back out-of-sample — a live overfitting demo.
+
+## 10. Calibration curve (joint grid)  ·  small
+
+Predicted P(number at position) vs observed frequency; should sit on the
+diagonal (well-calibrated to a non-predictive distribution).
+
+## 11. "Does more data help?"  ·  small
+
+Model score vs training-window size — a flat line: more history ≠ signal.
 
 ---
 
-## Suggested build order
-
-1 (uniformity) → 2 (bankroll) → 3 (trend) → 4 (tests) → 5 (games) → 6 (notify).
-
-1–3 reinforce the honest core and are the most interesting; 4 is cheap
-insurance; 5–6 are nice-to-haves.
+_This file is the place for future ideas — add them above._
