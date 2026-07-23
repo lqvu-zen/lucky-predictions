@@ -22,6 +22,7 @@ from datetime import datetime
 from analyze import hot_cold, load_draws, summary
 from config import PRODUCTS, REPORTS_DIR, get_product
 from predict import suggest_all
+import randomness
 
 try:
     from ml.score import load_scorecard
@@ -86,6 +87,7 @@ def _product_payload(name: str, scorecard: dict | None) -> dict:
         "predictions": predictions,
         "next_draw": product.next_draw_date().isoformat(),
         "joint": joint_data,
+        "randomness": randomness.summary(name),
         "ml": ml,
     }
 
@@ -416,6 +418,25 @@ keys.forEach((k,idx)=>{
       </div>`;
   }
 
+  let randCard = '';
+  if(d.randomness && d.randomness.uniformity){
+    const R=d.randomness, u=R.uniformity, oe=R.odd_even, rp=R.repeats;
+    const ok = u.p > 0.05;
+    randCard = `
+      <div class="card col12">
+        <h3><span class="ic" style="background:${ok?'var(--mint)':'var(--hot)'}"></span>Is the draw actually random?</h3>
+        <table><tbody>
+          <tr><td>Chi-square uniformity</td><td>X² = ${u.chi2} (dof ${u.dof})</td>
+              <td class="sc" style="color:${ok?'var(--mint)':'var(--hot)'}">p = ${u.p}</td></tr>
+          <tr><td>Odd / even balance</td><td>${oe.odd} odd · ${oe.even} even</td>
+              <td class="sc">p = ${oe.p}</td></tr>
+          <tr><td>Repeats vs previous draw</td><td>mean ${rp.mean_repeat}</td>
+              <td style="color:var(--muted)">expected ${rp.expected}</td></tr>
+        </tbody></table>
+        <div style="color:var(--faint);font-size:11px;margin-top:8px">Over ${R.draws.toLocaleString()} draws. A high p-value means we <b>cannot reject</b> a fair uniform draw. ${R.verdict}</div>
+      </div>`;
+  }
+
   const recent = d.recent.map(r=>`<tr>
       <td>${r.date}</td><td>#${r.id}</td>
       <td class="recent-nums">${r.main.map(pad).join(' ')}${r.bonus!=null?` <span class="b">| ${pad(r.bonus)}</span>`:''}</td>
@@ -468,6 +489,8 @@ keys.forEach((k,idx)=>{
         <h3><span class="ic" style="background:var(--gold)"></span>Most overdue</h3>
         <table><tbody>${rowsTable(d.overdue,'over','d')}</tbody></table>
       </div>
+
+      ${randCard}
 
       <div class="card col12">
         <h3><span class="ic" style="background:#fff"></span>Recent draws</h3>

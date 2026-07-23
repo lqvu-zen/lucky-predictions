@@ -40,6 +40,7 @@ from config import PRODUCTS, REPORTS_DIR, get_product  # noqa: E402
 import analyze  # noqa: E402
 import dashboard  # noqa: E402
 import predict  # noqa: E402
+import randomness  # noqa: E402
 
 
 def _fmt_line(nums) -> str:
@@ -112,6 +113,11 @@ def cmd_predict(args) -> None:
         for ln in r["tickets"]:
             print(f"  {_fmt_line(ln)}")
     print("\n(For fun only - these cannot improve real odds.)")
+
+
+def cmd_uniformity(args) -> None:
+    print()
+    print(randomness.format_report(randomness.summary(args.product)))
 
 
 def cmd_ml_backtest_joint(args) -> None:
@@ -416,6 +422,10 @@ def main() -> None:
     pp.add_argument("--tickets", type=int, default=3)
     pp.add_argument("--seed", type=int, default=None)
     pp.set_defaults(func=cmd_predict)
+
+    pu = sub.add_parser("uniformity", help="randomness tests on the draw history")
+    pu.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    pu.set_defaults(func=cmd_uniformity)
 
     pbp = sub.add_parser("ml-backtest-pos", help="positional (ordered) model backtest")
     pbp.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")

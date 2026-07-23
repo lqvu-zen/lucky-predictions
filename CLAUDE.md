@@ -2,6 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Rule: check the roadmap
+
+`docs/ROADMAP.md` tracks planned-but-not-yet-built enhancements. **Before
+wrapping up a task or when asked "what's next", consult `docs/ROADMAP.md`** to
+see if anything was forgotten or is ready to build, and keep it up to date:
+tick off items as they ship and add new ideas as they come up.
+
 ## What this is
 
 An educational project that crawls Vietnamese lottery results for **Power 6/55** and **Power 6/45**, computes descriptive statistics, and builds two position-based models "for fun". The models deliberately do not — and cannot — improve real odds; lottery draws are uniform random. Keep any code and docs honest about this: evaluation is designed to *demonstrate* the absence of an edge (mean hits vs the random baseline, with bootstrap CIs).
