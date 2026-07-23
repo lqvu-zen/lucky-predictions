@@ -7,7 +7,7 @@ the odds.
 ## Status (tick off as shipped)
 
 - [x] 1. Uniformity test — `src/randomness.py`, `run.py uniformity`, dashboard card
-- [ ] 2. Bankroll / EV simulator
+- [x] 2. Bankroll / EV simulator — `src/bankroll.py`, prize tiers in config, `run.py bankroll`, dashboard chart
 - [ ] 3. Accuracy trend over time
 - [ ] 4. Test suite
 - [ ] 5. More games (Keno / Power 5/35)

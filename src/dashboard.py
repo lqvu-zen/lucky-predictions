@@ -23,6 +23,7 @@ from analyze import hot_cold, load_draws, summary
 from config import PRODUCTS, REPORTS_DIR, get_product
 from predict import suggest_all
 import randomness
+import bankroll
 
 try:
     from ml.score import load_scorecard
@@ -88,6 +89,7 @@ def _product_payload(name: str, scorecard: dict | None) -> dict:
         "next_draw": product.next_draw_date().isoformat(),
         "joint": joint_data,
         "randomness": randomness.summary(name),
+        "bankroll": bankroll.simulate(name),
         "ml": ml,
     }
 
@@ -418,6 +420,44 @@ keys.forEach((k,idx)=>{
       </div>`;
   }
 
+  let bankCard = '';
+  if(d.bankroll && d.bankroll.draws){
+    const b = d.bankroll;
+    const fmt = n => (n/1e6).toFixed(2)+'M';
+    const trows = Object.entries(b.totals).map(([s,v])=>
+      `<tr><td>${s}</td><td>${fmt(v.spent)}</td><td>${fmt(v.won)}</td>
+        <td class="sc" style="color:var(--hot)">${fmt(v.net)}</td>
+        <td style="color:var(--hot)">${v.return_pct}%</td></tr>`).join('');
+    // real bankroll for every predictor from its logged results (grows over time)
+    let realTable = '';
+    if(d.ml && d.ml.models){
+      const rr = Object.entries(d.ml.models)
+        .filter(([,v])=>v.scored>0)
+        .sort((a,b)=> b[1].net - a[1].net);
+      if(rr.length){
+        const vnd = n => (n/1e3).toFixed(0)+'k';
+        realTable = `<h3 style="margin-top:18px"><span class="ic" style="background:var(--gold)"></span>Real P/L to date · every predictor (${d.ml.total_scored} scored)</h3>
+          <table><thead><tr><th>Predictor</th><th>Draws</th><th>Spent</th><th>Won</th><th>Net</th><th>Return</th></tr></thead><tbody>`
+          + rr.map(([m,v])=>`<tr ${m==='consensus'?'style="background:rgba(247,201,72,.10)"':''}>
+              <td>${m==='consensus'?'⭐ ':''}<b>${m}</b></td><td>${v.scored}</td>
+              <td>${vnd(v.spent)}</td><td>${vnd(v.won)}</td>
+              <td class="sc" style="color:${v.net<0?'var(--hot)':'var(--mint)'}">${vnd(v.net)}</td>
+              <td style="color:${v.return_pct<0?'var(--hot)':'var(--mint)'}">${v.return_pct}%</td></tr>`).join('')
+          + `</tbody></table>
+          <div style="color:var(--faint);font-size:11px;margin-top:6px">Real out-of-sample results from each logged prediction (models, fun lines, and consensus). Grows with every draw.</div>`;
+      }
+    }
+    bankCard = `
+      <div class="card col12">
+        <h3><span class="ic" style="background:var(--hot)"></span>If you actually played every draw · bankroll</h3>
+        <div style="color:var(--faint);font-size:11px;margin-bottom:6px">Simulated over all ${b.draws.toLocaleString()} draws (representative strategies), 1 line/draw @ ${(b.cost/1000)}k VND:</div>
+        <div class="chartbox"><canvas id="bank-${k}"></canvas></div>
+        <table style="margin-top:12px"><thead><tr><th>Strategy</th><th>Spent</th><th>Won</th><th>Net</th><th>Return</th></tr></thead><tbody>${trows}</tbody></table>
+        ${realTable}
+        <div style="color:var(--faint);font-size:11px;margin-top:8px">Every line trends down — that's the house edge. No ticket, model or system changes it.</div>
+      </div>`;
+  }
+
   let randCard = '';
   if(d.randomness && d.randomness.uniformity){
     const R=d.randomness, u=R.uniformity, oe=R.odd_even, rp=R.repeats;
@@ -490,6 +530,8 @@ keys.forEach((k,idx)=>{
         <table><tbody>${rowsTable(d.overdue,'over','d')}</tbody></table>
       </div>
 
+      ${bankCard}
+
       ${randCard}
 
       <div class="card col12">
@@ -517,12 +559,29 @@ function drawChart(k){
       scales:{x:{ticks:{color:'#5f6b85',autoSkip:true,maxTicksLimit:28,font:{size:10}},grid:{display:false}},
         y:{ticks:{color:'#5f6b85'},grid:{color:'rgba(255,255,255,.06)'}}}}});
 }
+const bankColors={random:'#4da6ff',hot:'#ff5d6c',cold:'#37e0a6',overdue:'#f7c948',balanced:'#9b6dff'};
+function drawBankroll(k){
+  const d=DATA[k], b=d.bankroll;
+  if(!b||!b.draws||charts['bank-'+k]||!window.Chart) return;
+  const ctx=document.getElementById('bank-'+k); if(!ctx) return;
+  const ds=Object.entries(b.chart.series).map(([s,arr])=>({
+    label:s, data:arr.map(v=>v/1e6), borderColor:bankColors[s]||'#8b97ad',
+    backgroundColor:'transparent', borderWidth:2, pointRadius:0, tension:.15}));
+  charts['bank-'+k]=new Chart(ctx,{type:'line',
+    data:{labels:b.chart.labels, datasets:ds},
+    options:{maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#93a0bd',boxWidth:12,font:{size:11}}},
+        tooltip:{callbacks:{label:it=>it.dataset.label+': '+it.raw.toFixed(1)+'M VND'}}},
+      scales:{x:{ticks:{color:'#5f6b85',autoSkip:true,maxTicksLimit:8,font:{size:10}},grid:{display:false}},
+        y:{ticks:{color:'#5f6b85',callback:v=>v+'M'},grid:{color:'rgba(255,255,255,.06)'},
+           title:{display:true,text:'cumulative VND',color:'#5f6b85',font:{size:10}}}}}});
+}
 function activate(k){
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',keys[i]===k));
   document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+k));
-  drawChart(k);
+  drawChart(k); drawBankroll(k);
 }
-window.addEventListener('load',()=>drawChart(keys[0]));
+window.addEventListener('load',()=>{drawChart(keys[0]); drawBankroll(keys[0]);});
 </script>
 </body>
 </html>

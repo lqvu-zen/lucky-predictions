@@ -38,6 +38,10 @@ class Product:
     referer: str
     draw_days: tuple = ()   # weekdays draws happen (Mon=0..Sun=6)
     draw_hour: int = 18     # draws at 18:00 Vietnam time
+    ticket_cost: int = 10000            # VND per line
+    # prize (VND) by number of matched main numbers; jackpot is a nominal fixed
+    # figure since the real one rolls over. Used only by the bankroll simulator.
+    prize_tiers: tuple = ()             # ((match, payout), ...)
 
     @property
     def raw_path(self) -> Path:
@@ -73,6 +77,7 @@ POWER_655 = Product(
     main_count=6,
     referer="https://vietlott.vn/vi/trung-thuong/ket-qua-trung-thuong/winning-number-655",
     draw_days=(_WD["Tue"], _WD["Thu"], _WD["Sat"]),
+    prize_tiers=((3, 50_000), (4, 500_000), (5, 40_000_000), (6, 30_000_000_000)),
 )
 
 POWER_645 = Product(
@@ -86,6 +91,7 @@ POWER_645 = Product(
     main_count=6,
     referer="https://vietlott.vn/vi/trung-thuong/ket-qua-trung-thuong/winning-number-645",
     draw_days=(_WD["Wed"], _WD["Fri"], _WD["Sun"]),
+    prize_tiers=((3, 30_000), (4, 300_000), (5, 10_000_000), (6, 12_000_000_000)),
 )
 
 PRODUCTS = {p.name: p for p in (POWER_655, POWER_645)}

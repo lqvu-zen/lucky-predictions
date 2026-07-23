@@ -41,6 +41,7 @@ import analyze  # noqa: E402
 import dashboard  # noqa: E402
 import predict  # noqa: E402
 import randomness  # noqa: E402
+import bankroll  # noqa: E402
 
 
 def _fmt_line(nums) -> str:
@@ -118,6 +119,11 @@ def cmd_predict(args) -> None:
 def cmd_uniformity(args) -> None:
     print()
     print(randomness.format_report(randomness.summary(args.product)))
+
+
+def cmd_bankroll(args) -> None:
+    print()
+    print(bankroll.format_report(bankroll.simulate(args.product)))
 
 
 def cmd_ml_backtest_joint(args) -> None:
@@ -426,6 +432,10 @@ def main() -> None:
     pu = sub.add_parser("uniformity", help="randomness tests on the draw history")
     pu.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
     pu.set_defaults(func=cmd_uniformity)
+
+    pbk = sub.add_parser("bankroll", help="simulate buying a line every draw")
+    pbk.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    pbk.set_defaults(func=cmd_bankroll)
 
     pbp = sub.add_parser("ml-backtest-pos", help="positional (ordered) model backtest")
     pbp.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")

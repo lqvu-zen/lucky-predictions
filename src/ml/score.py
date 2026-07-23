@@ -98,6 +98,11 @@ def rebuild_scorecard() -> dict:
             n = len(mr)
             k = product.main_count
             mean_pos = sum(s.get("pos_hits", 0) for s in mr) / n
+            # real bankroll from this predictor's actual logged results
+            tiers = dict(product.prize_tiers)
+            cost = product.ticket_cost
+            spent = n * cost
+            won = sum(tiers.get(s["hits"], 0) for s in mr)
             models[kind] = {
                 "scored": n,
                 "mean_hits": round(sum(s["hits"] for s in mr) / n, 3),
@@ -108,6 +113,8 @@ def rebuild_scorecard() -> dict:
                 "baseline_hits": round(k ** 2 / product.max_value, 3),
                 "best_hits": max(s["hits"] for s in mr),
                 "best_pos_hits": max(s.get("pos_hits", 0) for s in mr),
+                "spent": spent, "won": won, "net": won - spent,
+                "return_pct": round(100.0 * won / spent - 100.0, 1) if spent else 0.0,
             }
         pending = [e for e in entries if e["game"] == name and not e.get("scored")]
         next_pred = None
