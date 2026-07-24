@@ -16,6 +16,7 @@ internet the first time it's opened; everything else is offline).
 """
 from __future__ import annotations
 
+import base64
 import json
 from datetime import datetime
 
@@ -96,12 +97,30 @@ def _product_payload(name: str, scorecard: dict | None) -> dict:
     }
 
 
+# Brand mark: a gold four-leaf clover badge (works as favicon + header logo)
+LOGO_SVG = (
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+    '<defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1">'
+    '<stop offset="0" stop-color="#ffe89a"/><stop offset="1" stop-color="#f2a900"/>'
+    '</linearGradient></defs>'
+    '<rect x="3" y="3" width="58" height="58" rx="15" fill="#141b2b" stroke="#33406b"/>'
+    '<path d="M32 37 C31 45 31 49 33 53" fill="none" stroke="#37e0a6" '
+    'stroke-width="3" stroke-linecap="round"/>'
+    '<g fill="url(#lg)">'
+    '<circle cx="32" cy="21" r="8.6"/><circle cx="23" cy="30" r="8.6"/>'
+    '<circle cx="41" cy="30" r="8.6"/><circle cx="32" cy="39" r="8.6"/></g>'
+    '<circle cx="32" cy="30" r="3.2" fill="#141b2b"/>'
+    '</svg>'
+)
+
+
 HTML_TEMPLATE = r"""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lucky Predictions Dashboard</title>
+<link rel="icon" type="image/svg+xml" href="__FAVICON__">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -136,7 +155,9 @@ HTML_TEMPLATE = r"""<!doctype html>
     border:1px solid var(--card-brd);
     box-shadow:0 20px 60px -30px rgba(0,0,0,.8);
   }
-  .hero::after{content:"🎰"; position:absolute; right:18px; top:-14px; font-size:120px; opacity:.09; transform:rotate(8deg)}
+  .brand{display:flex; align-items:center; gap:16px}
+  .logo{flex:0 0 auto; width:56px; height:56px; filter:drop-shadow(0 8px 16px rgba(247,201,72,.28))}
+  .logo svg{width:100%; height:100%; display:block}
   .hero h1{margin:0; font-size:30px; letter-spacing:-.5px;
     background:linear-gradient(90deg,var(--gold),#fff 60%); -webkit-background-clip:text; background-clip:text; color:transparent}
   .hero .sub{color:var(--muted); font-size:13px; margin-top:6px}
@@ -254,8 +275,13 @@ HTML_TEMPLATE = r"""<!doctype html>
 <body>
 <div class="wrap">
   <div class="hero">
-    <h1>Lucky Predictions Dashboard</h1>
-    <div class="sub">Power 6/55 &amp; 6/45 &middot; generated __GENERATED__</div>
+    <div class="brand">
+      <span class="logo">__LOGO__</span>
+      <div>
+        <h1>Lucky Predictions</h1>
+        <div class="sub">Power 6/55 &amp; 6/45 &middot; generated __GENERATED__</div>
+      </div>
+    </div>
     <div class="pill"><span class="dot"></span>Lottery draws are random — stats describe the past and can't predict the future. For fun only.</div>
   </div>
 
@@ -644,9 +670,13 @@ window.addEventListener('load',()=>{drawChart(keys[0]); drawBankroll(keys[0]); d
 def build(output_path=None) -> str:
     scorecard = load_scorecard()
     payload = {name: _product_payload(name, scorecard) for name in PRODUCTS}
+    favicon = "data:image/svg+xml;base64," + base64.b64encode(
+        LOGO_SVG.encode("utf-8")).decode("ascii")
     html = (HTML_TEMPLATE
             .replace("__DATA__", json.dumps(payload, ensure_ascii=False))
-            .replace("__GENERATED__", datetime.now().strftime("%Y-%m-%d %H:%M")))
+            .replace("__GENERATED__", datetime.now().strftime("%Y-%m-%d %H:%M"))
+            .replace("__FAVICON__", favicon)
+            .replace("__LOGO__", LOGO_SVG))
     out = output_path or (REPORTS_DIR / "dashboard.html")
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     with open(out, "w", encoding="utf-8") as f:
