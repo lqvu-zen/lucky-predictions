@@ -34,12 +34,21 @@ def build_base(product: Product, draws=None, min_history: int = 50):
 
 
 def train(Xbase, Y, k):
+    import warnings
+
+    from sklearn.exceptions import ConvergenceWarning
     from sklearn.linear_model import LogisticRegression
     models = []
-    for i in range(k):
-        clf = LogisticRegression(max_iter=300, multi_class="auto")
-        clf.fit(Xbase, Y[:, i])
-        models.append(clf)
+    with warnings.catch_warnings():
+        # lbfgs often hits the iter cap on this tiny, unscaled problem; the
+        # result is fine and the warning just floods the daily log.
+        warnings.simplefilter("ignore", ConvergenceWarning)
+        for i in range(k):
+            # note: `multi_class` was removed in scikit-learn 1.7 — leave it
+            # off; LogisticRegression is multinomial-capable by default.
+            clf = LogisticRegression(max_iter=1000)
+            clf.fit(Xbase, Y[:, i])
+            models.append(clf)
     return models
 
 
