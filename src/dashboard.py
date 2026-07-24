@@ -21,7 +21,7 @@ import json
 from datetime import datetime
 
 from analyze import hot_cold, load_draws, summary
-from config import PRODUCTS, REPORTS_DIR, get_product
+from config import PRODUCTS, REPORTS_DIR, VN_TZ, get_product
 from predict import suggest_all
 import randomness
 import bankroll
@@ -674,7 +674,8 @@ def build(output_path=None) -> str:
         LOGO_SVG.encode("utf-8")).decode("ascii")
     html = (HTML_TEMPLATE
             .replace("__DATA__", json.dumps(payload, ensure_ascii=False))
-            .replace("__GENERATED__", datetime.now().strftime("%Y-%m-%d %H:%M"))
+            .replace("__GENERATED__",
+                     datetime.now(VN_TZ).strftime("%Y-%m-%d %H:%M") + " (Vietnam time)")
             .replace("__FAVICON__", favicon)
             .replace("__LOGO__", LOGO_SVG))
     out = output_path or (REPORTS_DIR / "dashboard.html")

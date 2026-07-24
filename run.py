@@ -36,7 +36,7 @@ for _stream in (sys.stdout, sys.stderr):
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from config import PRODUCTS, REPORTS_DIR, get_product  # noqa: E402
+from config import PRODUCTS, REPORTS_DIR, VN_TZ, get_product  # noqa: E402
 import analyze  # noqa: E402
 import dashboard  # noqa: E402
 import predict  # noqa: E402
@@ -381,8 +381,8 @@ def cmd_daily(args) -> None:
     except ImportError:
         print("[crawl] crawler deps missing, skipping crawl", file=sys.stderr)
 
-    # 2) build report
-    today = datetime.now().strftime("%Y-%m-%d")
+    # 2) build report (Vietnam date, so cloud UTC runners don't drift a day)
+    today = datetime.now(VN_TZ).strftime("%Y-%m-%d")
     parts = [
         f"# Lucky Predictions daily report - {today}",
         "",
