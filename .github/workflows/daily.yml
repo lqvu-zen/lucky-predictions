@@ -13,6 +13,12 @@ on:
     # GitHub may delay scheduled runs by several minutes.
     - cron: "0 12 * * *"
   workflow_dispatch: {}      # lets you run it manually from the Actions tab
+  push:                      # when you push new draws locally, rebuild + redeploy
+    paths:
+      - "data/**"
+      - "predictions/**"
+    # (the bot's own data commits use GITHUB_TOKEN, which does NOT retrigger
+    #  workflows, so this can't loop.)
 
 permissions:
   contents: write            # commit updated data back to the repo

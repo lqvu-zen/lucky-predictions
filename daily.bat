@@ -14,4 +14,17 @@ echo. >> "logs\daily.log"
 echo [%date% %time%] starting daily run >> "logs\daily.log"
 REM --extra ml pulls in numpy/scikit-learn so the predict->score loop runs
 uv run --extra ml python run.py daily >> "logs\daily.log" 2>&1
+
+REM Publish: commit new draws + predictions and push so the live site updates.
+REM (Your Vietnam IP crawls fine; GitHub's runners are blocked, so we push
+REM  from here instead of relying on the cloud crawl.)
+git add data predictions >> "logs\daily.log" 2>&1
+git diff --cached --quiet
+if errorlevel 1 (
+    git commit -m "daily update %date%" >> "logs\daily.log" 2>&1
+    git push >> "logs\daily.log" 2>&1
+    echo [%date% %time%] pushed new data+predictions >> "logs\daily.log"
+) else (
+    echo [%date% %time%] no new draws to publish >> "logs\daily.log"
+)
 echo [%date% %time%] finished >> "logs\daily.log"
