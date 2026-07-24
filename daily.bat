@@ -22,8 +22,9 @@ git add data predictions >> "logs\daily.log" 2>&1
 git diff --cached --quiet
 if errorlevel 1 (
     git commit -m "daily update %date%" >> "logs\daily.log" 2>&1
-    git push >> "logs\daily.log" 2>&1
-    echo [%date% %time%] pushed new data+predictions >> "logs\daily.log"
+    REM integrate any remote changes first so the push isn't rejected
+    git pull --rebase >> "logs\daily.log" 2>&1
+    git push >> "logs\daily.log" 2>&1 && (echo [%date% %time%] pushed new data+predictions >> "logs\daily.log") || (echo [%date% %time%] PUSH FAILED - run: git pull --rebase then git push >> "logs\daily.log")
 ) else (
     echo [%date% %time%] no new draws to publish >> "logs\daily.log"
 )
