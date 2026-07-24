@@ -19,12 +19,31 @@ from datetime import datetime
 from pathlib import Path
 from typing import Iterable
 
+import re
+import sys
+
 import requests
 from bs4 import BeautifulSoup
 
 from config import Product, get_product
 
 TIMEOUT = 25
+
+
+def _get_cookie(session: requests.Session) -> dict:
+    """The ajaxpro endpoint sets an anti-bot cookie via a small JS snippet on
+    /ajaxpro/. Fetch it and return it as a cookie dict so the POST is accepted
+    (needed on non-Vietnam IPs like GitHub's runners). Best effort."""
+    try:
+        r = session.get("https://vietlott.vn/ajaxpro/", timeout=TIMEOUT)
+        m = re.search(r'document\.cookie="(.*?)"', r.text)
+        if m:
+            name, _, value = m.group(1).partition("=")
+            return {name: value}
+    except Exception as e:  # noqa: BLE001
+        print(f"[crawl] cookie handshake failed: {type(e).__name__}: {e}",
+              file=sys.stderr)
+    return {}
 
 
 def _headers(product: Product) -> dict:
@@ -103,17 +122,29 @@ def fetch_pages(product: Product, index_from: int = 0, index_to: int = 1) -> lis
     Returns a flat list of draw records (may contain duplicates across pages).
     """
     session = requests.Session()
+    cookies = _get_cookie(session)          # anti-bot cookie handshake
     all_rows: list[dict] = []
     for page in range(index_from, index_to + 1):
         resp = session.post(
             product.url,
             data=json.dumps(_body(product, page)),
             headers=_headers(product),
+            cookies=cookies,
             timeout=TIMEOUT,
         )
         resp.raise_for_status()
-        html = resp.json().get("value", {}).get("HtmlContent", "")
+        try:
+            html = resp.json().get("value", {}).get("HtmlContent", "")
+        except ValueError:
+            # not JSON — usually an anti-bot / challenge page; surface it
+            print(f"[crawl] {product.name} page {page}: non-JSON response "
+                  f"({len(resp.text)} chars) — likely blocked/needs cookie",
+                  file=sys.stderr)
+            continue
         rows = _parse_html(html)
+        if not rows:
+            print(f"[crawl] {product.name} page {page}: 0 rows parsed",
+                  file=sys.stderr)
         all_rows.extend(rows)
     return all_rows
 
