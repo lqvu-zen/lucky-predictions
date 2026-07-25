@@ -368,18 +368,23 @@ def cmd_dashboard(args) -> None:
 
 
 def cmd_daily(args) -> None:
-    # 1) crawl (best effort - skip on network failure so the report still runs)
-    try:
-        import crawler
-        for name in PRODUCTS:
-            try:
-                s = crawler.crawl(name, 0, args.pages)
-                print(f"[crawl] {s['product']}: +{s['new']} new (total {s['total']})")
-            except Exception as e:  # noqa: BLE001
-                print(f"[crawl] {name} skipped: {type(e).__name__}: {e}",
-                      file=sys.stderr)
-    except ImportError:
-        print("[crawl] crawler deps missing, skipping crawl", file=sys.stderr)
+    # 1) crawl (best effort - skip on network failure so the report still runs).
+    #    --no-crawl is for the cloud runner, whose IPs vietlott.vn blocks (403):
+    #    there the PC has already pushed fresh data, so we only rebuild + deploy.
+    if getattr(args, "no_crawl", False):
+        print("[crawl] skipped (--no-crawl): rebuilding from committed data")
+    else:
+        try:
+            import crawler
+            for name in PRODUCTS:
+                try:
+                    s = crawler.crawl(name, 0, args.pages)
+                    print(f"[crawl] {s['product']}: +{s['new']} new (total {s['total']})")
+                except Exception as e:  # noqa: BLE001
+                    print(f"[crawl] {name} skipped: {type(e).__name__}: {e}",
+                          file=sys.stderr)
+        except ImportError:
+            print("[crawl] crawler deps missing, skipping crawl", file=sys.stderr)
 
     # 2) build report (Vietnam date, so cloud UTC runners don't drift a day)
     today = datetime.now(VN_TZ).strftime("%Y-%m-%d")
@@ -512,6 +517,9 @@ def main() -> None:
 
     pd = sub.add_parser("daily", help="crawl + analyze + report + loop + dashboard")
     pd.add_argument("--pages", type=int, default=1)
+    pd.add_argument("--no-crawl", action="store_true",
+                    help="skip the crawl (for the cloud runner, whose IP is "
+                         "blocked); rebuild + deploy from committed data")
     pd.set_defaults(func=cmd_daily)
 
     args = ap.parse_args()

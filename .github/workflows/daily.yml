@@ -42,12 +42,13 @@ jobs:
       - name: Sync dependencies (with ML extras)
         run: uv sync --extra ml
 
-      # The cloud runner can't reach vietlott.vn (its IPs are blocked -> 403),
-      # so it never has new draws to commit. Data + predictions are the PC's
-      # job; the cloud only rebuilds the dashboard from what the PC pushed and
-      # deploys it. It deliberately does NOT commit anything back, which would
-      # otherwise collide with the PC's next push.
-      - name: Build dashboard from committed data
+      # The crawl still runs here on the off chance vietlott.vn later allows
+      # GitHub's IPs (right now they're blocked -> a harmless 403 in the log).
+      # It's best-effort: run.py keeps going and rebuilds the dashboard from the
+      # data the PC last pushed. The cloud does NOT commit anything back (that
+      # would collide with the PC's next push); it only rebuilds and deploys.
+      # If the crawl ever starts succeeding, flip this to commit + push again.
+      - name: Crawl (best-effort) + build dashboard from committed data
         run: uv run python run.py daily
 
       - name: Assemble Pages site
