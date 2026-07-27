@@ -12,8 +12,13 @@ if not exist "logs" mkdir "logs"
 
 echo. >> "logs\daily.log"
 echo [%date% %time%] starting daily run >> "logs\daily.log"
+
+REM Show progress live on screen AND append it to the log (Tee-Object).
+REM PYTHONUNBUFFERED makes Python flush immediately through the pipe, so the
+REM step banners appear as they happen instead of all at once at the end.
 REM --extra ml pulls in numpy/scikit-learn so the predict->score loop runs
-uv run --extra ml python run.py daily >> "logs\daily.log" 2>&1
+set PYTHONUNBUFFERED=1
+powershell -NoProfile -Command "uv run --extra ml python run.py daily 2>&1 | Tee-Object -Append -FilePath 'logs\daily.log'"
 
 REM Publish: commit new draws + predictions and push so the live site updates.
 REM (Your Vietnam IP crawls fine; GitHub's runners are blocked, so we push

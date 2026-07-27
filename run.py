@@ -367,7 +367,13 @@ def cmd_dashboard(args) -> None:
     print(f"[dashboard] wrote {dashboard.build()}")
 
 
+def _step(n: int, total: int, title: str) -> None:
+    """Print a step banner so the daily run shows live progress."""
+    print(f"\n=== [{n}/{total}] {title} ".ljust(70, "=") , flush=True)
+
+
 def cmd_daily(args) -> None:
+    _step(1, 4, "Crawl latest draws")
     # 1) crawl (best effort - skip on network failure so the report still runs).
     #    --no-crawl is for the cloud runner, whose IPs vietlott.vn blocks (403):
     #    there the PC has already pushed fresh data, so we only rebuild + deploy.
@@ -386,6 +392,7 @@ def cmd_daily(args) -> None:
         except ImportError:
             print("[crawl] crawler deps missing, skipping crawl", file=sys.stderr)
 
+    _step(2, 4, "Build daily report")
     # 2) build report (Vietnam date, so cloud UTC runners don't drift a day)
     today = datetime.now(VN_TZ).strftime("%Y-%m-%d")
     parts = [
@@ -405,6 +412,7 @@ def cmd_daily(args) -> None:
     (REPORTS_DIR / "latest.md").write_text(report, encoding="utf-8")
     print(f"[report] wrote {out}")
 
+    _step(3, 4, "Score past predictions + predict next draw")
     # 3) predict->score loop (best effort; needs the ML extras for positional)
     try:
         import numpy  # noqa: F401
@@ -415,8 +423,10 @@ def cmd_daily(args) -> None:
     except Exception as e:  # noqa: BLE001
         print(f"[ml] loop skipped: {type(e).__name__}: {e}", file=sys.stderr)
 
+    _step(4, 4, "Rebuild HTML dashboard")
     # 4) refresh the HTML dashboard (includes the model scorecard)
     print(f"[dashboard] wrote {dashboard.build()}")
+    print("\n=== daily run complete ===", flush=True)
 
 
 def main() -> None:
