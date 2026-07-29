@@ -376,8 +376,19 @@ keys.forEach((k,idx)=>{
         <td style="color:var(--muted)">${v.mean_hits.toFixed(2)}</td>
         <td style="color:var(--faint)">${v.best_pos_hits}/6</td></tr>`;
     }).join('');
-    const nextLines = np ? Object.entries(np.by_model).map(([k,line])=>
-        `<div class="row"><div class="tag">${k}</div>${balls(line,null,true)}</div>`).join('') : '';
+    // order next-draw tickets by track record: best k/6, then how often it hit
+    // that best (falls back to plain key order for older scorecards)
+    const npOrder = (np && np.model_order) ? np.model_order : (np ? Object.keys(np.by_model) : []);
+    const npStats = (np && np.model_stats) ? np.model_stats : {};
+    const nextLines = np ? npOrder.map((k,i)=>{
+        const line = np.by_model[k]; if(!line) return '';
+        const st = npStats[k];
+        const badge = st
+          ? `<span style="color:var(--faint);font-size:11px;margin-left:6px" title="best ${st.best_pos_hits}/6, reached ${st.best_pos_count}x over ${st.scored} scored draws">${st.best_pos_hits}/6 &times;${st.best_pos_count}</span>`
+          : `<span style="color:var(--faint);font-size:11px;margin-left:6px">no record yet</span>`;
+        const top = (i===0 && st) ? ' style="background:rgba(55,224,166,.10)"' : '';
+        return `<div class="row"${top}><div class="tag">${k}${badge}</div>${balls(line,null,true)}</div>`;
+      }).join('') : '';
     const scored = m.total_scored||0;
     mlCard = `
       <div class="card col12">
@@ -394,7 +405,8 @@ keys.forEach((k,idx)=>{
             <div class="cnums">${chips}</div>
             <div style="color:var(--faint);font-size:11px;margin-top:8px">Numbers the most predictors (of ${np.n_models}) agree on. The small figure is the vote count. Consensus is just aggregation — it still can't beat the odds.</div>`;
         })() : ''}
-        ${np ? `<h3 style="margin-top:18px"><span class="ic" style="background:var(--mint)"></span>Each predictor · ${np.target_date}</h3><div class="pred">${nextLines}</div>` : ''}
+        ${np ? `<h3 style="margin-top:18px"><span class="ic" style="background:var(--mint)"></span>Each predictor · ${np.target_date}</h3><div class="pred">${nextLines}</div>
+          <div style="color:var(--faint);font-size:11px;margin-top:8px">Ordered by track record: highest best-ever k/6 first, then how many times that best was reached. The badge reads best/6 &times; times. Ordering is cosmetic — a predictor's past position-accuracy says nothing about the next draw.</div>` : ''}
       </div>`;
   }
 

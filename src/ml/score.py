@@ -105,6 +105,7 @@ def rebuild_scorecard() -> dict:
             n = len(mr)
             k = product.main_count
             mean_pos = sum(s.get("pos_hits", 0) for s in mr) / n
+            best_pos = max(s.get("pos_hits", 0) for s in mr)
             # real bankroll from this predictor's actual logged results
             tiers = dict(product.prize_tiers)
             cost = product.ticket_cost
@@ -119,7 +120,10 @@ def rebuild_scorecard() -> dict:
                 "mean_pos_score": round(mean_pos / k, 4),
                 "baseline_hits": round(k ** 2 / product.max_value, 3),
                 "best_hits": max(s["hits"] for s in mr),
-                "best_pos_hits": max(s.get("pos_hits", 0) for s in mr),
+                "best_pos_hits": best_pos,
+                # how many times this predictor reached its own best k/6
+                "best_pos_count": sum(1 for s in mr
+                                      if s.get("pos_hits", 0) == best_pos),
                 "spent": spent, "won": won, "net": won - spent,
                 "return_pct": round(100.0 * won / spent - 100.0, 1) if spent else 0.0,
             }
@@ -138,8 +142,31 @@ def rebuild_scorecard() -> dict:
                     votes[num] = votes.get(num, 0) + 1
             consensus = sorted(votes.items(), key=lambda kv: (-kv[1], kv[0]))
             n_models = len(voters)
+
+            # Rank the next-draw tickets by each predictor's track record:
+            # first by its best k/6 ever, then by how many times it hit that
+            # best, then by mean score. Predictors with no scored history sort
+            # last. NOTE: this is presentation only — past position-accuracy
+            # carries no information about the next draw.
+            def _rank(model_name: str):
+                st = models.get(model_name)
+                if not st:
+                    return (1, 0, 0, 0.0, model_name)
+                return (0, -st["best_pos_hits"], -st["best_pos_count"],
+                        -st["mean_pos_score"], model_name)
+
+            model_order = sorted(by_model, key=_rank)
             next_pred = {
                 "target_date": td, "by_model": by_model, "n_models": n_models,
+                "model_order": model_order,
+                # per-predictor track record, for the badges next to each line
+                "model_stats": {
+                    m: {"best_pos_hits": models[m]["best_pos_hits"],
+                        "best_pos_count": models[m]["best_pos_count"],
+                        "mean_pos_score": models[m]["mean_pos_score"],
+                        "scored": models[m]["scored"]}
+                    for m in by_model if m in models
+                },
                 "consensus": [[int(num), int(c)] for num, c in consensus],
                 # the top main_count numbers by vote as the "consensus ticket"
                 "consensus_ticket": sorted(int(num) for num, _ in consensus[:product.main_count]),
