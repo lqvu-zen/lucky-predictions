@@ -7,12 +7,17 @@ name: daily-crawl
 # - Builds the HTML dashboard (with ML scorecard), uploads it as an artifact,
 #   and publishes it to GitHub Pages (repo is public)
 
+# NOTE: there is deliberately no `schedule:` cron. vietlott.vn blocks GitHub's
+# runner IPs (403), so a nightly cloud crawl could only ever fail. The PC's
+# daily.bat crawls (Vietnam IP) and pushes; this workflow just rebuilds the
+# dashboard from what was pushed and deploys it to Pages.
 on:
-  schedule:
-    # 12:00 UTC = 19:00 Vietnam time (UTC+7) — soon after the 18:00 draw.
-    # GitHub may delay scheduled runs by several minutes.
-    - cron: "0 12 * * *"
-  workflow_dispatch: {}      # lets you run it manually from the Actions tab
+  workflow_dispatch:         # manual run from the Actions tab
+    inputs:
+      try_crawl:
+        description: "Attempt the crawl (only useful if vietlott.vn ever unblocks GitHub IPs)"
+        type: boolean
+        default: false
   push:                      # when you push new draws locally, rebuild + redeploy
     paths:
       - "data/**"
@@ -42,14 +47,12 @@ jobs:
       - name: Sync dependencies (with ML extras)
         run: uv sync --extra ml
 
-      # The crawl still runs here on the off chance vietlott.vn later allows
-      # GitHub's IPs (right now they're blocked -> a harmless 403 in the log).
-      # It's best-effort: run.py keeps going and rebuilds the dashboard from the
-      # data the PC last pushed. The cloud does NOT commit anything back (that
-      # would collide with the PC's next push); it only rebuilds and deploys.
-      # If the crawl ever starts succeeding, flip this to commit + push again.
-      - name: Crawl (best-effort) + build dashboard from committed data
-        run: uv run python run.py daily
+      # Automatic runs skip the crawl entirely (no 403 noise). To retest whether
+      # the block has lifted, run this workflow manually with try_crawl = true.
+      # Either way the cloud does NOT commit anything back — that would collide
+      # with the PC's next push. It only rebuilds and deploys.
+      - name: Rebuild dashboard from committed data
+        run: uv run python run.py daily ${{ inputs.try_crawl && ' ' || '--no-crawl' }}
 
       - name: Assemble Pages site
         run: |

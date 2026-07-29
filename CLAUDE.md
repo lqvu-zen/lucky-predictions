@@ -60,6 +60,26 @@ Stored draw record (one JSON object per line in `data/*.jsonl`):
 
 `data/*.jsonl` and `predictions/` are committed. Generated `reports/*` and `logs/` are gitignored (see `.gitignore`).
 
-## Windows automation
+## Automation: the PC crawls, the cloud only deploys
 
-`daily.bat` (crawl → analyze → loop → report → dashboard, appending to `logs/daily.log`) is the job. `install_schedule.bat` registers a `LuckyDaily` scheduled task (default 21:00). `setup.bat` runs `uv sync`. `train_all.bat` / `predict_all.bat` run all models with live progress. `push_to_github.bat` is a git helper. `.github/workflows/daily.yml` runs the same pipeline in the cloud and publishes the dashboard to GitHub Pages.
+**vietlott.vn blocks GitHub Actions runner IPs with a `403`.** The request itself
+is correct — the unrelated `vietvudanh/vietlott-data` project sends a byte-identical
+POST and also crawls from its own machine (a cron'd `bin/github_data.sh` that
+pushes data to GitHub), never from Actions. So this is a server-side IP block, not
+a bug; don't "fix" the crawler in response to a 403.
+
+The split that follows from that:
+
+- **PC (the only thing that crawls).** `daily.bat` runs crawl → report → predict/score
+  loop → dashboard, printing live progress via `Tee-Object` while appending to
+  `logs/daily.log`, then `git add data predictions`, `git pull --rebase --autostash`,
+  and pushes. `install_schedule.bat` registers the `LuckyDaily` task (default 21:00).
+- **Cloud (`.github/workflows/daily.yml`) — deploy only.** No `schedule:` cron. It
+  triggers on pushes to `data/**` / `predictions/**`, runs `run.py daily --no-crawl`,
+  and publishes to GitHub Pages. It deliberately **does not commit anything back**
+  (that would collide with the PC's next push). To retest whether the block ever
+  lifts, run it manually with the `try_crawl` input set to true.
+
+`run.py daily --no-crawl` skips the crawl and rebuilds from committed data.
+Other helpers: `setup.bat` (`uv sync`), `train_all.bat` / `predict_all.bat`,
+`push_to_github.bat`.
