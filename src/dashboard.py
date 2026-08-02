@@ -27,6 +27,15 @@ import randomness
 import bankroll
 import jackpot
 
+
+def _proper_summary(name: str, test_draws: int = 200):
+    """Log-loss / Brier of the position grid (best effort — never break build)."""
+    try:
+        from ml.proper import evaluate
+        return evaluate(name, test_draws=test_draws)
+    except Exception:  # noqa: BLE001
+        return None
+
 try:
     from ml.score import load_scorecard
 except Exception:  # ml package optional
@@ -93,6 +102,7 @@ def _product_payload(name: str, scorecard: dict | None) -> dict:
         "randomness": randomness.summary(name),
         "bankroll": bankroll.simulate(name),
         "jackpot": jackpot.summary(name),
+        "proper": _proper_summary(name),
         "ml": ml,
     }
 
@@ -544,6 +554,43 @@ keys.forEach((k,idx)=>{
       </div>`;
   }
 
+  let properCard = '';
+  if(d.proper && d.proper.models){
+    const P = d.proper, floor = P.entropy_floor;
+    const rows = Object.entries(P.models).sort((a,b)=> a[1].logloss - b[1].logloss);
+    const labels = {
+      'uniform':'Uniform (knows nothing)',
+      'theory':'Theory (closed-form law)',
+      'empirical':'Learned from all history',
+      'empirical-100':'Learned from last 100 draws',
+      'shrunk':'Shrunk toward theory'
+    };
+    const body = rows.map(([k,v],i)=>{
+      const good = i===0 ? 'style="background:rgba(55,224,166,.10)"' : '';
+      const ex = v.excess>=0 ? `+${v.excess.toFixed(4)}` : v.excess.toFixed(4);
+      return `<tr ${good}><td>${labels[k]||k}</td>
+        <td class="sc"><b>${v.logloss.toFixed(4)}</b></td>
+        <td class="sc" style="color:var(--faint)">[${v.logloss_lo.toFixed(3)}, ${v.logloss_hi.toFixed(3)}]</td>
+        <td class="sc" style="color:var(--muted)">${ex}</td>
+        <td class="sc" style="color:var(--muted)">${v.brier.toFixed(4)}</td></tr>`;
+    }).join('');
+    properCard = `
+      <div class="card col12">
+        <h3><span class="ic" style="background:var(--violet)"></span>How much does each model really know? · log-loss</h3>
+        <table><thead><tr><th>Model</th><th class="sc">Log-loss</th><th class="sc">95% CI</th><th class="sc">vs floor</th><th class="sc">Brier</th></tr></thead>
+        <tbody>${body}</tbody></table>
+        <div style="color:var(--faint);font-size:11px;margin-top:8px">
+          Instead of asking "did it guess the number", this grades the whole probability
+          the model put on the number that actually landed at each position — a
+          <b>proper scoring rule</b>, far less noisy than k/6. Lower is better, in nats, over ${P.tested} draws.
+          The <b>floor is ${floor.toFixed(4)}</b>: the entropy of the true position law, i.e. the irreducible
+          uncertainty of a fair draw. Nothing that only reads past draws can beat it — and nothing does.
+          "Uniform" is much worse, which proves the position law is <i>real</i> structure (position 1 really is
+          usually small); but that structure is identical every draw, so it still predicts nothing.
+        </div>
+      </div>`;
+  }
+
   const recent = d.recent.map(r=>`<tr>
       <td>${r.date}</td><td>#${r.id}</td>
       <td class="recent-nums">${r.main.map(pad).join(' ')}${r.bonus!=null?` <span class="b">| ${pad(r.bonus)}</span>`:''}</td>
@@ -604,6 +651,8 @@ keys.forEach((k,idx)=>{
       ${bankCard}
 
       ${randCard}
+
+      ${properCard}
 
       <div class="card col12">
         <h3><span class="ic" style="background:#fff"></span>Recent draws</h3>

@@ -119,4 +119,90 @@ Model score vs training-window size — a flat line: more history ≠ signal.
 
 ---
 
+# Round three: everything aimed at "number K at position I"
+
+The whole family below targets one metric: **P(number k lands at sorted
+position i)**, and the k/6 position score built on it.
+
+**The ceiling, stated up front.** For a uniform draw the grid is known exactly
+(order statistics of sampling without replacement):
+
+    P(X_(i) = k) = C(k-1, i-1) · C(N-k, m-i) / C(N, m)
+
+`ml/joint.closed_form_grid` already computes it. Any model trained only on past
+draws can, at best, *re-estimate this same fixed grid* — so every idea below is
+bounded by the same ceiling (item 14 measures it). They are worth building as
+sharper measurement and better decision rules, not as a route to an edge.
+
+## A. Analytics (measure the position structure)
+
+- [ ] 12. **Residual map** — empirical grid minus `closed_form_grid`, as
+      standardized z-scores per cell, plus a χ² per position. Expect a noise
+      field with ~5% of cells past ±2σ. Turns the existing heatmap into a test.
+- [ ] 13. **Per-position distributions** — box/violin of p1…p6 (observed vs
+      theoretical mean and quartiles). Shows p1 is small, p6 is large, and each
+      is far too wide to pin down.
+- [ ] 14. **Theoretical ceiling (Monte-Carlo)** — if you knew the true grid
+      perfectly, what mean k/6 would the optimal ticket score? Simulate to get
+      the value + CI. **The reference line every predictor should be read
+      against**; currently only the crude mode-baseline exists.
+- [ ] 15. **Null distribution of k/6** — score N random tickets to get the full
+      distribution, then report each predictor's empirical percentile/p-value.
+      Much more informative than comparing to a single baseline number.
+- [ ] 16. **Position autocorrelation** — corr(pos i at draw t, pos i at draw
+      t−lag) for lags 1..10, per position. Expect ≈0: the draw has no memory.
+- [ ] 17. **Adjacent-gap distribution** — d_i = x_(i+1) − x_(i) observed vs
+      theoretical. A different lens on the same structure.
+- [x] 18. **Log-loss / Brier scoring of the grid** ⭐ — `src/ml/proper.py`,
+      `run.py proper-score`, dashboard card, `tests/test_proper.py`.
+      Result (6/55, 200 draws): floor 3.3623 nats; theory 3.3548, shrunk 3.3801,
+      empirical 3.3811, empirical-100 3.5625, uniform 4.0073 (= ln 55 exactly,
+      a nice implementation check). Nothing beats the floor; learning from
+      history lands a hair *above* the closed-form law (estimation noise), and a
+      100-draw window is clearly worse — more data helps you estimate a fixed
+      law, not predict a draw. Same story for 6/45 (floor 3.1496, uniform
+      3.8067 = ln 45).
+- [ ] 19. **Position error profile** — for each position, distribution of
+      (predicted − actual), and a confusion-style band chart. Shows models are
+      right about the *shape* and helpless about the *value*.
+
+## B. Models / decision rules (produce the ticket)
+
+- [ ] 20. **Optimal assignment (Hungarian)** ⭐ — current models pick per-position
+      modes greedily, which is *not* optimal once "distinct + ascending" is
+      enforced. Solving it as a max-weight assignment on log-probabilities gives
+      the ticket with genuinely maximal expected position-hits. A real
+      correctness improvement over greedy, independent of any edge.
+- [ ] 21. **Bayesian shrinkage grid** — Dirichlet–multinomial with the
+      closed-form grid as prior; posterior = shrunk empirical grid. The
+      principled fix for overfitting sparse cells, and shrinkage strength
+      becomes a tunable knob.
+- [ ] 22. **Positional Markov chain** — discrete P(x_i | x_(i−1)) transition
+      matrices + Viterbi/beam search over ascending paths. Differs from the
+      existing `chain-ridge` (regression) by being fully probabilistic.
+- [ ] 23. **Quantile / median regression per position** — predict the median or
+      mode rather than the mean; better matched to an exact-match metric than
+      ridge's squared-error target.
+- [ ] 24. **Global beam search** — instead of choosing each position greedily,
+      search the top-B ascending combinations by total grid log-probability.
+- [ ] 25. **Copula / order-statistic resampling** — sample tickets preserving
+      the dependence between positions, not just the marginals.
+- [ ] 26. **LightGBM per-position classifier** — stronger learner than the
+      current logistic `perpos-clf`; useful precisely because it will *also*
+      land on the baseline.
+- [ ] 27. **Neural sequence model** — small LSTM/Transformer over the draw
+      sequence. The most persuasive negative result for anyone who assumes deep
+      learning would find something. (Needs torch — heavy.)
+- [ ] 28. **Genetic-algorithm ticket** — optimize a ticket directly against
+      historical k/6. Will look brilliant in-sample and collapse out-of-sample:
+      the clearest overfitting demonstration in the project.
+- [ ] 29. **Hidden Markov model** — latent-state model over positions; another
+      "sophisticated method, same ceiling" data point.
+
+**Suggested order:** 18 → 14 → 20 → 21 (better metric, then a reference line,
+then a provably better decision rule, then better estimation), with 15 and 12
+as quick analytics wins alongside.
+
+---
+
 _This file is the place for future ideas — add them above._

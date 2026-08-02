@@ -127,6 +127,12 @@ def cmd_bankroll(args) -> None:
     print(bankroll.format_report(bankroll.simulate(args.product)))
 
 
+def cmd_proper(args) -> None:
+    from ml import proper
+    print(proper.format_report(proper.evaluate(args.product,
+                                               test_draws=args.test)))
+
+
 def cmd_jackpot(args) -> None:
     print()
     print(jackpot.format_report(jackpot.summary(args.product)))
@@ -457,6 +463,12 @@ def main() -> None:
     pbk = sub.add_parser("bankroll", help="simulate buying a line every draw")
     pbk.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
     pbk.set_defaults(func=cmd_bankroll)
+
+    ppr = sub.add_parser("proper-score",
+                         help="log-loss / Brier scoring of the position grid")
+    ppr.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    ppr.add_argument("--test", type=int, default=200)
+    ppr.set_defaults(func=cmd_proper)
 
     pj = sub.add_parser("jackpot", help="jackpot reality-check expectation")
     pj.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
