@@ -27,6 +27,8 @@ uv run python run.py ml-predict-joint power_655      # joint number x position t
 uv run python run.py ml-backtest-pos power_655 --model both
 uv run python run.py ml-backtest-joint power_655
 uv run python run.py proper-score power_655           # log-loss/Brier of the position grid
+uv run python run.py ceiling power_655                # best possible score + noise band
+uv run python run.py optimal-ticket power_655         # greedy vs provably-optimal ticket
 uv run python run.py ml-loop                         # score past predictions + predict next
 uv run python run.py daily                           # crawl + analyze + report + loop + dashboard
 ```

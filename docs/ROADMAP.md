@@ -142,10 +142,24 @@ sharper measurement and better decision rules, not as a route to an edge.
 - [ ] 13. **Per-position distributions** — box/violin of p1…p6 (observed vs
       theoretical mean and quartiles). Shows p1 is small, p6 is large, and each
       is far too wide to pin down.
-- [ ] 14. **Theoretical ceiling (Monte-Carlo)** — if you knew the true grid
-      perfectly, what mean k/6 would the optimal ticket score? Simulate to get
-      the value + CI. **The reference line every predictor should be read
-      against**; currently only the crude mode-baseline exists.
+- [x] 14. **Theoretical ceiling** ⭐ — `src/ml/ceiling.py`, `run.py ceiling`,
+      dashboard card, `tests/test_ceiling.py`. The *mean* ceiling turned out to
+      need no simulation at all: it is `expected_pos_hits(closed_form_grid,
+      optimal_ticket(...))`, and a random ticket's expectation is the collision
+      sum `sum_p sum_v grid[v][p]^2`.
+
+      6/55: ceiling **0.0651**, random ticket **0.0423** — knowing the exact law
+      is worth **+0.0229** of a k/6 point. Optimal ticket `[1, 11, 22, 33, 44, 55]`.
+
+      What simulation adds is the **noise band**, which is the real payload: over
+      130 draws even a perfect model lands anywhere in [0.0487, 0.0821]; over 13
+      draws, [0.0128, 0.1282]. Each predictor is compared against a band for
+      *its own* sample size — comparing a 13-draw model to a 130-draw band
+      wrongly flags ordinary luck as a discovery (it briefly did, and that bug is
+      what `test_band_widens_as_sample_shrinks` now guards). With bands done
+      correctly, **every predictor sits inside its band**, and the bands are far
+      wider than the gaps between predictors — the quantitative reason the
+      leaderboard keeps reshuffling.
 - [ ] 15. **Null distribution of k/6** — score N random tickets to get the full
       distribution, then report each predictor's empirical percentile/p-value.
       Much more informative than comparing to a single baseline number.
@@ -168,11 +182,24 @@ sharper measurement and better decision rules, not as a route to an edge.
 
 ## B. Models / decision rules (produce the ticket)
 
-- [ ] 20. **Optimal assignment (Hungarian)** ⭐ — current models pick per-position
-      modes greedily, which is *not* optimal once "distinct + ascending" is
-      enforced. Solving it as a max-weight assignment on log-probabilities gives
-      the ticket with genuinely maximal expected position-hits. A real
-      correctness improvement over greedy, independent of any edge.
+- [x] 20. **Optimal assignment** ⭐ — `src/ml/optimal.py`, `run.py optimal-ticket`,
+      `tests/test_optimal.py`. Not Hungarian in the end: the ascending constraint
+      turns the assignment into a chain, so an exact O(N·k) DP
+      (`dp[p][v] = grid[v][p] + max_{v'<v} dp[p-1][v']`) solves it — simpler, and
+      it respects the ordering that unconstrained Hungarian would ignore.
+
+      **Result: no gain — greedy was already optimal.** On theory, empirical and
+      shrunk grids for both games the two tickets are byte-identical
+      (6/55 → `[1, 11, 29, 34, 47, 55]`, gain +0.00000). The reason is a property
+      of the order-statistic law: its columns are ordered by monotone likelihood
+      ratio, so each position's argmax is already increasing and greedy never
+      steals a number a later position needed.
+
+      The DP is verified, not vacuous: `test_optimal.py` shows it strictly beats
+      greedy on an adversarial grid (where greedy grabs a number position 1
+      needed) and matches brute-force enumeration exactly on a random grid.
+      Deliberately **not** registered as a predictor — it would duplicate
+      `joint-grid` and add a fake name to the leaderboard.
 - [ ] 21. **Bayesian shrinkage grid** — Dirichlet–multinomial with the
       closed-form grid as prior; posterior = shrunk empirical grid. The
       principled fix for overfitting sparse cells, and shrinkage strength

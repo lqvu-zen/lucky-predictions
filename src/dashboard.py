@@ -36,6 +36,15 @@ def _proper_summary(name: str, test_draws: int = 200):
     except Exception:  # noqa: BLE001
         return None
 
+
+def _ceiling_summary(name: str):
+    """Best achievable score + per-model noise bands (best effort)."""
+    try:
+        from ml.ceiling import with_observed
+        return with_observed(name)
+    except Exception:  # noqa: BLE001
+        return None
+
 try:
     from ml.score import load_scorecard
 except Exception:  # ml package optional
@@ -103,6 +112,7 @@ def _product_payload(name: str, scorecard: dict | None) -> dict:
         "bankroll": bankroll.simulate(name),
         "jackpot": jackpot.summary(name),
         "proper": _proper_summary(name),
+        "ceiling": _ceiling_summary(name),
         "ml": ml,
     }
 
@@ -591,6 +601,48 @@ keys.forEach((k,idx)=>{
       </div>`;
   }
 
+  let ceilCard = '';
+  if(d.ceiling && d.ceiling.ceiling_score!=null){
+    const C = d.ceiling;
+    const obs = (C.observed||[]);
+    // scale bars against the widest band so the noise is visually obvious
+    const top = Math.max(C.ceiling_score*1.6, ...obs.map(o=>o.band_hi||0), 0.02);
+    const bars = obs.map(o=>{
+      const l = 100*o.band_lo/top, w = Math.max(100*(o.band_hi-o.band_lo)/top, 0.6);
+      const dot = 100*Math.min(o.score,top)/top;
+      const col = o.in_band ? 'var(--mint)' : 'var(--hot)';
+      return `<tr><td style="white-space:nowrap">${o.model}</td>
+        <td class="sc" style="color:var(--muted)">${o.scored}</td>
+        <td class="sc"><b>${o.score.toFixed(4)}</b></td>
+        <td style="width:55%">
+          <div style="position:relative;height:14px;background:rgba(255,255,255,.04);border-radius:7px">
+            <div style="position:absolute;left:${l}%;width:${w}%;top:0;bottom:0;background:rgba(255,255,255,.13);border-radius:7px"></div>
+            <div style="position:absolute;left:${100*C.ceiling_score/top}%;top:-2px;bottom:-2px;width:2px;background:var(--gold)"></div>
+            <div style="position:absolute;left:calc(${dot}% - 3px);top:3px;width:8px;height:8px;border-radius:50%;background:${col}"></div>
+          </div></td></tr>`;
+    }).join('');
+    ceilCard = `
+      <div class="card col12">
+        <h3><span class="ic" style="background:var(--gold)"></span>How good could a <i>perfect</i> model be?</h3>
+        <div class="kpis">
+          <div class="kpi"><div class="l">Ceiling (knows the exact law)</div><div class="n">${C.ceiling_score.toFixed(4)}</div></div>
+          <div class="kpi"><div class="l">A random ticket</div><div class="n">${C.random_score.toFixed(4)}</div></div>
+          <div class="kpi"><div class="l">Worth of perfect knowledge</div><div class="n">+${(C.ceiling_score-C.random_score).toFixed(4)}</div></div>
+          <div class="kpi"><div class="l">Optimal ticket</div><div class="n small">${C.optimal_ticket.join(' · ')}</div></div>
+        </div>
+        ${bars ? `<table style="margin-top:12px"><thead><tr><th>Predictor</th><th class="sc">n</th><th class="sc">Score</th>
+          <th>Where a perfect model would land over the same n draws</th></tr></thead><tbody>${bars}</tbody></table>` : ''}
+        <div style="color:var(--faint);font-size:11px;margin-top:8px">
+          The gold line is the ceiling: the best expected k/6 anyone could reach <b>even knowing the draw law exactly</b>
+          (${C.ceiling_score.toFixed(4)} vs ${C.random_score.toFixed(4)} for a random ticket — perfect knowledge is worth
+          almost nothing). The grey bar is the 95% range a <i>perfect</i> model would still land in over that predictor's
+          own number of scored draws; the dot is where it actually landed. Every dot sits inside its bar, so no predictor
+          is doing anything a perfect one wouldn't do by luck alone — and the bars are far wider than the gaps between
+          predictors, which is why the leaderboard keeps changing hands.
+        </div>
+      </div>`;
+  }
+
   const recent = d.recent.map(r=>`<tr>
       <td>${r.date}</td><td>#${r.id}</td>
       <td class="recent-nums">${r.main.map(pad).join(' ')}${r.bonus!=null?` <span class="b">| ${pad(r.bonus)}</span>`:''}</td>
@@ -653,6 +705,8 @@ keys.forEach((k,idx)=>{
       ${randCard}
 
       ${properCard}
+
+      ${ceilCard}
 
       <div class="card col12">
         <h3><span class="ic" style="background:#fff"></span>Recent draws</h3>

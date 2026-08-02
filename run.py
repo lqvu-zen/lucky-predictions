@@ -127,6 +127,21 @@ def cmd_bankroll(args) -> None:
     print(bankroll.format_report(bankroll.simulate(args.product)))
 
 
+def cmd_ceiling(args) -> None:
+    from ml import ceiling
+    print(ceiling.format_report(ceiling.with_observed(
+        args.product, ceiling.simulate(args.product, n_draws=args.draws))))
+
+
+def cmd_optimal(args) -> None:
+    from ml import optimal
+    print(optimal.format_compare(optimal.compare(args.product)))
+    if args.backtest:
+        print()
+        print(optimal.format_backtest(
+            optimal.backtest(args.product, test_draws=args.test)))
+
+
 def cmd_proper(args) -> None:
     from ml import proper
     print(proper.format_report(proper.evaluate(args.product,
@@ -463,6 +478,19 @@ def main() -> None:
     pbk = sub.add_parser("bankroll", help="simulate buying a line every draw")
     pbk.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
     pbk.set_defaults(func=cmd_bankroll)
+
+    pceil = sub.add_parser("ceiling",
+                           help="best score a perfect model could reach, and its noise band")
+    pceil.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    pceil.add_argument("--draws", type=int, default=130)
+    pceil.set_defaults(func=cmd_ceiling)
+
+    popt = sub.add_parser("optimal-ticket",
+                          help="greedy vs provably-optimal ticket from a grid")
+    popt.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    popt.add_argument("--backtest", action="store_true")
+    popt.add_argument("--test", type=int, default=120)
+    popt.set_defaults(func=cmd_optimal)
 
     ppr = sub.add_parser("proper-score",
                          help="log-loss / Brier scoring of the position grid")
