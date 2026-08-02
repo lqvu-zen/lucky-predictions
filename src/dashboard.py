@@ -26,6 +26,7 @@ from predict import suggest_all
 import randomness
 import bankroll
 import jackpot
+import ticket_ev
 
 
 def _proper_summary(name: str, test_draws: int = 200):
@@ -33,6 +34,15 @@ def _proper_summary(name: str, test_draws: int = 200):
     try:
         from ml.proper import evaluate
         return evaluate(name, test_draws=test_draws)
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _overfit_summary(name: str):
+    """In-sample vs out-of-sample by training size (best effort)."""
+    try:
+        from ml.genetic import sweep
+        return sweep(name)
     except Exception:  # noqa: BLE001
         return None
 
@@ -123,6 +133,8 @@ def _product_payload(name: str, scorecard: dict | None) -> dict:
         "proper": _proper_summary(name),
         "ceiling": _ceiling_summary(name),
         "residual": _residual_summary(name),
+        "ev": ticket_ev.summary(name),
+        "overfit": _overfit_summary(name),
         "ml": ml,
     }
 
@@ -327,6 +339,11 @@ const keys = Object.keys(DATA);
 const charts = {};
 
 const pad = n => String(n).padStart(2,'0');
+function vnd(x){
+  if(Math.abs(x) >= 1e9) return (x/1e9).toFixed(1)+'bn';
+  if(Math.abs(x) >= 1e6) return (x/1e6).toFixed(1)+'m';
+  return Math.round(x).toLocaleString();
+}
 function balls(main, bonus, sm){
   const c = sm ? ' sm' : '';
   let h = main.map((n,i)=>`<div class="ball${c}" style="animation-delay:${i*45}ms">${pad(n)}</div>`).join('');
@@ -660,6 +677,76 @@ keys.forEach((k,idx)=>{
       </div>`;
   }
 
+  let overfitCard = '';
+  if(d.overfit && (d.overfit.rows||[]).length){
+    const O = d.overfit;
+    const rws = O.rows.map(x=>{
+      const gap = x.train_score - x.test_score;
+      const over = x.train_score > O.ceiling_score;
+      return `<tr><td class="sc">${x.n_train}</td>
+        <td class="sc" style="color:${over?'var(--hot)':'var(--muted)'}"><b>${x.train_score.toFixed(4)}</b></td>
+        <td class="sc" style="color:var(--muted)">${x.test_score.toFixed(4)}</td>
+        <td class="sc" style="color:var(--faint)">+${gap.toFixed(4)}</td></tr>`;
+    }).join('');
+    overfitCard = `
+      <div class="card col12">
+        <h3><span class="ic" style="background:var(--hot)"></span>Why "it worked on past draws" means nothing</h3>
+        <div class="chartbox"><canvas id="over-${k}"></canvas></div>
+        <table style="margin-top:12px"><thead><tr><th class="sc">Training draws</th><th class="sc">Score on them</th>
+          <th class="sc">Score on unseen</th><th class="sc">Gap</th></tr></thead><tbody>${rws}</tbody></table>
+        <div style="color:var(--faint);font-size:11px;margin-top:8px">
+          A ticket was optimised against N past draws, then scored on ${O.n_test} draws it never saw.
+          With only 10 training draws it scores <b>${O.rows[0].train_score.toFixed(4)}</b> on them —
+          ${(O.rows[0].train_score/O.ceiling_score).toFixed(1)}&times; the theoretical ceiling of
+          ${O.ceiling_score.toFixed(4)}, which no genuine knowledge could ever pass — and then delivers
+          <b>${O.rows[0].test_score.toFixed(4)}</b> on new draws, at or below a random ticket
+          (${O.random_score.toFixed(4)}). As the training set grows the gap closes and the "discovered"
+          ticket turns out to be the plain theoretical one. Overfitting is not a flaw of one algorithm;
+          it is the ratio of freedom to evidence. Any backtest without held-out data can be made to look
+          like this.
+        </div>
+      </div>`;
+  }
+
+  let evCard = '';
+  if(d.ev && d.ev.tiers){
+    const E = d.ev;
+    const trows = E.tiers.map(t=>
+      `<tr><td>${t.matches} of ${E.main_count}</td>
+       <td class="sc" style="color:var(--muted)">1 in ${Math.round(t.one_in).toLocaleString()}</td>
+       <td class="sc">${vnd(t.prize)}</td>
+       <td class="sc" style="color:var(--faint)">${Math.round(t.contribution).toLocaleString()} VND</td></tr>`).join('');
+    evCard = `
+      <div class="card col12">
+        <h3><span class="ic" style="background:var(--hot)"></span>What is your line actually worth?</h3>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+          <span style="color:var(--muted);font-size:12px;margin-right:4px">Your ${E.main_count} numbers (1&ndash;${E.max_value}):</span>
+          ${Array.from({length:E.main_count},(_,i)=>
+            `<input id="ev-${k}-${i}" type="number" min="1" max="${E.max_value}" placeholder="?"
+              style="width:56px;padding:6px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.14);
+                     background:rgba(255,255,255,.05);color:inherit;text-align:center;font-size:14px">`).join('')}
+          <button id="ev-${k}-pick" style="margin-left:6px;padding:6px 12px;border-radius:8px;cursor:pointer;
+            border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:inherit;font-size:12px">Quick pick</button>
+        </div>
+        <div id="ev-${k}-out" style="font-size:12px;color:var(--muted);margin-bottom:12px">Type a line to check it.</div>
+        <table><thead><tr><th>Match</th><th class="sc">Chance</th><th class="sc">Prize</th><th class="sc">Adds to EV</th></tr></thead>
+          <tbody>${trows}</tbody></table>
+        <div class="kpis" style="margin-top:12px">
+          <div class="kpi"><div class="l">Line costs</div><div class="n">${E.ticket_cost.toLocaleString()}</div></div>
+          <div class="kpi"><div class="l">Expected return</div><div class="n">${Math.round(E.gross_ev).toLocaleString()}</div></div>
+          <div class="kpi"><div class="l">Expected loss</div><div class="n" style="color:var(--hot)">${Math.round(E.net_ev).toLocaleString()}</div></div>
+          <div class="kpi"><div class="l">Return</div><div class="n" style="color:var(--hot)">${E.return_pct.toFixed(1)}%</div></div>
+        </div>
+        <div style="color:var(--faint);font-size:11px;margin-top:8px">
+          Chance of winning <i>anything</i>: ${(100*E.p_any_prize).toFixed(2)}% (1 in ${(1/E.p_any_prize).toFixed(0)}).
+          Notice what the table above does when you change your numbers: <b>nothing</b>. The probabilities depend only on
+          how many numbers you pick from how many — never on which ones. All ${E.total_tickets.toLocaleString()} possible
+          tickets carry the identical expected value of <b>${Math.round(E.net_ev).toLocaleString()} VND</b> per line.
+          Every strategy on this page, mine included, is decoration on top of that one number.
+        </div>
+      </div>`;
+  }
+
   let resCard = '';
   if(d.residual && d.residual.positions){
     const R2 = d.residual;
@@ -753,13 +840,62 @@ keys.forEach((k,idx)=>{
 
       ${ceilCard}
 
+      ${overfitCard}
+
+      ${evCard}
+
       <div class="card col12">
         <h3><span class="ic" style="background:#fff"></span>Recent draws</h3>
         <table><thead><tr><th>Date</th><th>Draw</th><th>Numbers</th></tr></thead><tbody>${recent}</tbody></table>
       </div>
     </div>`;
   main.appendChild(p);
+  wireEvCalc(k);
 });
+
+// Interactive line checker. Validates the entry, then reports the same expected
+// value no matter what was typed — which is the entire point of the exercise.
+function wireEvCalc(k){
+  const d = DATA[k]; if(!d.ev) return;
+  const E = d.ev, N = E.max_value, K = E.main_count;
+  const out = document.getElementById('ev-'+k+'-out');
+  const boxes = Array.from({length:K},(_,i)=>document.getElementById('ev-'+k+'-'+i));
+  if(!out || boxes.some(b=>!b)) return;
+
+  function check(){
+    const raw = boxes.map(b=>b.value.trim()).filter(v=>v!=='');
+    if(raw.length < K){
+      out.style.color='var(--muted)';
+      out.textContent = `Enter ${K-raw.length} more number${K-raw.length>1?'s':''} to check a line.`;
+      return;
+    }
+    const nums = raw.map(Number);
+    if(nums.some(n=>!Number.isInteger(n) || n<1 || n>N)){
+      out.style.color='var(--hot)';
+      out.textContent = `Numbers must be whole, between 1 and ${N}.`;
+      return;
+    }
+    if(new Set(nums).size !== K){
+      out.style.color='var(--hot)';
+      out.textContent = 'Numbers must all be different.';
+      return;
+    }
+    const line = nums.slice().sort((a,b)=>a-b);
+    out.style.color='var(--muted)';
+    out.innerHTML = `Your line <b style="color:var(--gold)">${line.map(pad).join(' · ')}</b> — `
+      + `expected value <b style="color:var(--hot)">${Math.round(E.net_ev).toLocaleString()} VND</b> per draw. `
+      + `Exactly the same as every other line. Try changing a number.`;
+  }
+
+  boxes.forEach(b=>b.addEventListener('input', check));
+  const pick = document.getElementById('ev-'+k+'-pick');
+  if(pick) pick.addEventListener('click', ()=>{
+    const pool = Array.from({length:N},(_,i)=>i+1);
+    for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+    pool.slice(0,K).sort((a,b)=>a-b).forEach((v,i)=>{ boxes[i].value = v; });
+    check();
+  });
+}
 
 function drawChart(k){
   const d=DATA[k];
@@ -815,12 +951,38 @@ function drawTrend(k){
       scales:{x:{ticks:{color:'#5f6b85',autoSkip:true,maxTicksLimit:8,font:{size:10}},grid:{display:false}},
         y:{ticks:{color:'#5f6b85'},grid:{color:'rgba(255,255,255,.06)'},title:{display:true,text:'running k/6',color:'#5f6b85',font:{size:10}}}}}});
 }
+function drawOverfit(k){
+  const d=DATA[k], o=d.overfit;
+  if(!o||!(o.rows||[]).length||charts['over-'+k]||!window.Chart) return;
+  const ctx=document.getElementById('over-'+k); if(!ctx) return;
+  const labels=o.rows.map(r=>r.n_train);
+  charts['over-'+k]=new Chart(ctx,{type:'line',
+    data:{labels, datasets:[
+      {label:'score on training draws', data:o.rows.map(r=>r.train_score),
+       borderColor:'#ff5d6c', backgroundColor:'transparent', borderWidth:2.5,
+       pointRadius:3, tension:.2},
+      {label:'score on unseen draws', data:o.rows.map(r=>r.test_score),
+       borderColor:'#37e0a6', backgroundColor:'transparent', borderWidth:2.5,
+       pointRadius:3, tension:.2},
+      {label:'theoretical ceiling', data:labels.map(()=>o.ceiling_score),
+       borderColor:'#f7c948', borderDash:[5,5], borderWidth:1.5, pointRadius:0},
+      {label:'random ticket', data:labels.map(()=>o.random_score),
+       borderColor:'#5f6b85', borderDash:[3,3], borderWidth:1, pointRadius:0}]},
+    options:{maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#93a0bd',boxWidth:12,font:{size:11}}},
+        tooltip:{callbacks:{title:it=>it[0].label+' training draws',
+          label:it=>it.dataset.label+': '+it.raw.toFixed(4)}}},
+      scales:{x:{ticks:{color:'#5f6b85',font:{size:10}},grid:{display:false},
+          title:{display:true,text:'training draws',color:'#5f6b85',font:{size:10}}},
+        y:{ticks:{color:'#5f6b85'},grid:{color:'rgba(255,255,255,.06)'},
+           title:{display:true,text:'k/6 score',color:'#5f6b85',font:{size:10}}}}}});
+}
 function activate(k){
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',keys[i]===k));
   document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+k));
-  drawChart(k); drawBankroll(k); drawTrend(k);
+  drawChart(k); drawBankroll(k); drawTrend(k); drawOverfit(k);
 }
-window.addEventListener('load',()=>{drawChart(keys[0]); drawBankroll(keys[0]); drawTrend(keys[0]);});
+window.addEventListener('load',()=>{drawChart(keys[0]); drawBankroll(keys[0]); drawTrend(keys[0]); drawOverfit(keys[0]);});
 </script>
 </body>
 </html>

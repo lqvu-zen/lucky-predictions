@@ -29,6 +29,8 @@ uv run python run.py ml-backtest-joint power_655
 uv run python run.py proper-score power_655           # log-loss/Brier of the position grid
 uv run python run.py ceiling power_655                # best possible score + noise band + p-values
 uv run python run.py residual power_655               # does number K at position I match theory?
+uv run python run.py ticket-ev power_655              # expected value of one line, by prize tier
+uv run python run.py overfit power_655                # GA ticket: in-sample vs out-of-sample
 uv run python run.py optimal-ticket power_655         # greedy vs provably-optimal ticket
 uv run python run.py ml-loop                         # score past predictions + predict next
 uv run python run.py daily                           # crawl + analyze + report + loop + dashboard

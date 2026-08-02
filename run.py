@@ -127,6 +127,18 @@ def cmd_bankroll(args) -> None:
     print(bankroll.format_report(bankroll.simulate(args.product)))
 
 
+def cmd_overfit(args) -> None:
+    from ml import genetic
+    print(genetic.format_report(genetic.evaluate(args.product)))
+    print()
+    print(genetic.format_sweep(genetic.sweep(args.product)))
+
+
+def cmd_ticket_ev(args) -> None:
+    import ticket_ev
+    print(ticket_ev.format_report(ticket_ev.summary(args.product)))
+
+
 def cmd_residual(args) -> None:
     from ml import residual
     print(residual.format_report(residual.summary(args.product)))
@@ -483,6 +495,16 @@ def main() -> None:
     pbk = sub.add_parser("bankroll", help="simulate buying a line every draw")
     pbk.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
     pbk.set_defaults(func=cmd_bankroll)
+
+    pof = sub.add_parser("overfit",
+                         help="genetic-algorithm ticket: in-sample vs out-of-sample")
+    pof.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    pof.set_defaults(func=cmd_overfit)
+
+    pev = sub.add_parser("ticket-ev",
+                         help="expected value of one line, by prize tier")
+    pev.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    pev.set_defaults(func=cmd_ticket_ev)
 
     pres = sub.add_parser("residual",
                           help="does the observed number x position grid match theory?")

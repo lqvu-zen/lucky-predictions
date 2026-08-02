@@ -16,7 +16,8 @@ the odds.
 Round two:
 
 - [x] 7. Jackpot expectation — `src/jackpot.py`, `run.py jackpot`, dashboard card
-- [ ] 8. Interactive ticket EV calculator (type 6 numbers → odds + EV)
+- [x] 8. Interactive ticket EV calculator — `src/ticket_ev.py`, `run.py ticket-ev`,
+      dashboard card with 6 inputs + quick-pick, `tests/test_ticket_ev.py`
 - [ ] 9. Meta-learner (stacking) predictor — learn per-predictor weights
 - [ ] 10. Calibration curve for the joint grid
 - [ ] 11. "Does more data help?" — score vs training-window size
@@ -98,10 +99,19 @@ C(N, k); expected years = that / draws-per-year; expected spend = that ×
 ticket cost; plus a relatable comparison (e.g. lightning). Dashboard card +
 `run.py jackpot`.
 
-## 8. Interactive ticket EV calculator  ·  small
+## 8. Interactive ticket EV calculator  ·  small  — DONE
 
-Client-side: user types 6 numbers, dashboard shows the hypergeometric odds of
-each prize tier and the expected value of the line (deeply negative).
+`src/ticket_ev.py` holds the exact hypergeometric maths
+(`P(j) = C(k,j)·C(N-k,k-j)/C(N,k)`); the dashboard card lets you type a line or
+hit quick-pick, validates it (in range, distinct), and reports the EV.
+
+6/55: 1.33% chance of any prize (1 in 75), expected return 2,380 VND on a
+10,000 VND line → **−7,620 VND (−76.2%)**. 6/45: −7,157 VND (−71.6%).
+
+The design *is* the lesson: `match_probability` takes no ticket argument, so the
+number you type cannot change the answer — the card says so, and
+`test_ev_does_not_depend_on_the_numbers_chosen` asserts the signature stays that
+way so no future change can quietly introduce number-dependent odds.
 
 ## 9. Meta-learner (stacking)  ·  medium
 
@@ -238,9 +248,32 @@ sharper measurement and better decision rules, not as a route to an edge.
 - [ ] 27. **Neural sequence model** — small LSTM/Transformer over the draw
       sequence. The most persuasive negative result for anyone who assumes deep
       learning would find something. (Needs torch — heavy.)
-- [ ] 28. **Genetic-algorithm ticket** — optimize a ticket directly against
-      historical k/6. Will look brilliant in-sample and collapse out-of-sample:
-      the clearest overfitting demonstration in the project.
+- [x] 28. **Genetic-algorithm ticket** ⭐ — `src/ml/genetic.py`, `run.py overfit`,
+      dashboard card + chart, `tests/test_genetic.py`.
+
+      **The naive version was an anticlimax, and that is the finding.** Trained on
+      all 1179 draws, the GA scored 0.0717 in-sample vs 0.0683 out-of-sample —
+      barely 1.1× the ceiling, no real overfitting. A ticket is a *six-choice*
+      model; a thousand draws leave it no noise to memorise.
+
+      So the module sweeps training-set size instead, and there the collapse is
+      unmistakable (6/55, always tested on the same 200 unseen draws):
+
+      | train | in-sample | out-of-sample | gap |
+      |---:|---:|---:|---:|
+      | 10 | **0.2167** | 0.0392 | +0.1775 |
+      | 30 | 0.1500 | 0.0642 | +0.0858 |
+      | 100 | 0.1117 | 0.0442 | +0.0675 |
+      | 800 | 0.0729 | 0.0567 | +0.0163 |
+
+      With 10 draws the ticket scores **3.3× the theoretical ceiling** — flatly
+      impossible for genuine knowledge — and then performs *below a random ticket*
+      on new draws. The gap closes monotonically with data. Overfitting is not a
+      property of the algorithm; it is the ratio of freedom to evidence.
+
+      Bonus: fitness is `sum_p counts[p][ticket_p]`, i.e. *linear*, so the exact
+      in-sample optimum is what #20's DP returns — the GA is rediscovering a table
+      lookup. `test_ga_cannot_beat_the_exact_optimum` pins that bound down.
 - [ ] 29. **Hidden Markov model** — latent-state model over positions; another
       "sophisticated method, same ceiling" data point.
 
