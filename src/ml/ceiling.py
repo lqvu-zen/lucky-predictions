@@ -90,6 +90,35 @@ def simulate(product_name: str, n_draws: int = 130, n_sims: int = 2000,
     }
 
 
+def simulate_null(product_name: str, n_draws: int, n_sims: int = 2000,
+                  seed: int = 11) -> list[float]:
+    """Null distribution of the k/6 score for a *skill-free* player (roadmap #15).
+
+    Each run picks a fresh random ascending ticket and plays it against n_draws
+    random draws. The resulting spread is what "no skill whatsoever" looks like
+    over that sample size — the reference for a p-value.
+    """
+    product = get_product(product_name)
+    k, N = product.main_count, product.max_value
+    rng = random.Random(seed)
+    means = []
+    for _ in range(n_sims):
+        ticket = sorted(rng.sample(range(1, N + 1), k))
+        total = 0
+        for _ in range(n_draws):
+            actual = _draw(rng, product)
+            total += sum(1 for i in range(k) if actual[i] == ticket[i])
+        means.append(total / n_draws / k)
+    means.sort()
+    return means
+
+
+def null_p_value(null_means: list[float], observed: float) -> float:
+    """P(a skill-free player scores at least this well). Add-one corrected."""
+    ge = sum(1 for m in null_means if m >= observed)
+    return (ge + 1) / (len(null_means) + 1)
+
+
 def with_observed(product_name: str, sim: dict | None = None) -> dict:
     """Attach each real predictor's observed score and whether it's in-band.
 
@@ -111,17 +140,31 @@ def with_observed(product_name: str, sim: dict | None = None) -> dict:
                 continue
             if n not in bands:
                 b = simulate(product_name, n_draws=n, n_sims=sim["n_sims"])
-                bands[n] = {"lo": b["lo"], "hi": b["hi"], "max": b["max_seen"]}
+                bands[n] = {"lo": b["lo"], "hi": b["hi"], "max": b["max_seen"],
+                            "null": simulate_null(product_name, n,
+                                                  n_sims=sim["n_sims"])}
             band = bands[n]
             rows.append({
                 "model": name, "score": s, "scored": n,
                 "band_lo": band["lo"], "band_hi": band["hi"],
                 "in_band": band["lo"] <= s <= band["hi"],
                 "above_ceiling": s > sim["ceiling_score"],
+                "p_value": null_p_value(band["null"], s),
             })
     rows.sort(key=lambda r: -r["score"])
+
+    # Multiple comparisons: with this many predictors, the *smallest* p-value is
+    # not the chance of a fluke — the chance that at least one of them looks
+    # good is much higher. Šidák-adjust the best one.
+    m = len(rows)
+    min_p = min((r["p_value"] for r in rows), default=1.0)
     sim["observed"] = rows
-    sim["bands"] = {str(n): b for n, b in bands.items()}
+    sim["n_models"] = m
+    sim["min_p"] = min_p
+    sim["sidak_p"] = 1.0 - (1.0 - min_p) ** m if m else 1.0
+    sim["any_significant"] = sim["sidak_p"] < 0.05
+    sim["bands"] = {str(n): {kk: vv for kk, vv in b.items() if kk != "null"}
+                    for n, b in bands.items()}
     return sim
 
 
@@ -151,11 +194,18 @@ def format_report(r: dict) -> str:
             star = " *" if o["above_ceiling"] else ""
             out.append(
                 f"    {o['model']:<18}{o['score']:.4f}  ({o['scored']:>3} scored)  "
-                f"band [{o['band_lo']:.4f}, {o['band_hi']:.4f}]  {flag}{star}")
+                f"band [{o['band_lo']:.4f}, {o['band_hi']:.4f}]  "
+                f"p={o['p_value']:.3f}  {flag}{star}")
         out += [
             "",
             "  * = above the ceiling's *mean*; over a handful of draws that is ordinary luck,",
             "    which is exactly why each model is judged against its own sample size.",
+            "",
+            f"  p = chance a skill-free player (random ticket) scores at least that well.",
+            f"  Best p = {r['min_p']:.4f} across {r['n_models']} predictors; testing that many,",
+            f"  the corrected value is Šidák p = {r['sidak_p']:.4f} — "
+            + ("SIGNIFICANT, investigate." if r["any_significant"]
+               else "nothing significant."),
         ]
     out += [
         "",

@@ -37,6 +37,15 @@ def _proper_summary(name: str, test_draws: int = 200):
         return None
 
 
+def _residual_summary(name: str):
+    """Observed grid vs theory, as a test (best effort)."""
+    try:
+        from ml.residual import summary
+        return summary(name)
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def _ceiling_summary(name: str):
     """Best achievable score + per-model noise bands (best effort)."""
     try:
@@ -113,6 +122,7 @@ def _product_payload(name: str, scorecard: dict | None) -> dict:
         "jackpot": jackpot.summary(name),
         "proper": _proper_summary(name),
         "ceiling": _ceiling_summary(name),
+        "residual": _residual_summary(name),
         "ml": ml,
     }
 
@@ -614,6 +624,7 @@ keys.forEach((k,idx)=>{
       return `<tr><td style="white-space:nowrap">${o.model}</td>
         <td class="sc" style="color:var(--muted)">${o.scored}</td>
         <td class="sc"><b>${o.score.toFixed(4)}</b></td>
+        <td class="sc" style="color:${o.p_value<0.05?'var(--gold)':'var(--faint)'}">${o.p_value.toFixed(3)}</td>
         <td style="width:55%">
           <div style="position:relative;height:14px;background:rgba(255,255,255,.04);border-radius:7px">
             <div style="position:absolute;left:${l}%;width:${w}%;top:0;bottom:0;background:rgba(255,255,255,.13);border-radius:7px"></div>
@@ -630,8 +641,14 @@ keys.forEach((k,idx)=>{
           <div class="kpi"><div class="l">Worth of perfect knowledge</div><div class="n">+${(C.ceiling_score-C.random_score).toFixed(4)}</div></div>
           <div class="kpi"><div class="l">Optimal ticket</div><div class="n small">${C.optimal_ticket.join(' · ')}</div></div>
         </div>
-        ${bars ? `<table style="margin-top:12px"><thead><tr><th>Predictor</th><th class="sc">n</th><th class="sc">Score</th>
-          <th>Where a perfect model would land over the same n draws</th></tr></thead><tbody>${bars}</tbody></table>` : ''}
+        ${bars ? `<table style="margin-top:12px"><thead><tr><th>Predictor</th><th class="sc">n</th><th class="sc">Score</th><th class="sc">p</th>
+          <th>Where a perfect model would land over the same n draws</th></tr></thead><tbody>${bars}</tbody></table>
+          <div style="color:var(--faint);font-size:11px;margin-top:6px">
+            <b>p</b> = the chance a skill-free player (a random ticket) scores at least that well.
+            Best p here is <b>${C.min_p.toFixed(4)}</b> — which looks impressive until you remember we are testing
+            <b>${C.n_models}</b> predictors at once. Corrected for that, Šidák p = <b>${C.sidak_p.toFixed(4)}</b>:
+            ${C.any_significant ? 'significant — worth investigating.' : 'nothing significant. Test enough candidates and one always looks gifted.'}
+          </div>` : ''}
         <div style="color:var(--faint);font-size:11px;margin-top:8px">
           The gold line is the ceiling: the best expected k/6 anyone could reach <b>even knowing the draw law exactly</b>
           (${C.ceiling_score.toFixed(4)} vs ${C.random_score.toFixed(4)} for a random ticket — perfect knowledge is worth
@@ -639,6 +656,32 @@ keys.forEach((k,idx)=>{
           own number of scored draws; the dot is where it actually landed. Every dot sits inside its bar, so no predictor
           is doing anything a perfect one wouldn't do by luck alone — and the bars are far wider than the gaps between
           predictors, which is why the leaderboard keeps changing hands.
+        </div>
+      </div>`;
+  }
+
+  let resCard = '';
+  if(d.residual && d.residual.positions){
+    const R2 = d.residual;
+    const prow = R2.positions.map(p=>
+      `<tr><td>Position ${p.position}</td>
+       <td class="sc" style="color:var(--muted)">${p.chi2.toFixed(1)} / ${p.dof}</td>
+       <td class="sc" style="color:${p.ok?'var(--mint)':'var(--gold)'}">${p.p.toFixed(4)}</td></tr>`).join('');
+    resCard = `
+      <div class="card col12">
+        <h3><span class="ic" style="background:${R2.clean!==false?'var(--mint)':'var(--hot)'}"></span>Does "number K at position I" match theory?</h3>
+        <div class="kpis">
+          <div class="kpi"><div class="l">Cells beyond 2&sigma;</div><div class="n">${(100*R2.frac_gt2).toFixed(1)}%</div><div class="l">expect ~4.6%</div></div>
+          <div class="kpi"><div class="l">Largest |z|</div><div class="n">${R2.max_abs_z.toFixed(2)}</div><div class="l">p = ${R2.max_z_p.toFixed(3)}</div></div>
+          <div class="kpi"><div class="l">Mean z</div><div class="n">${R2.mean_z.toFixed(3)}</div><div class="l">expect ~0</div></div>
+          <div class="kpi"><div class="l">Šidák p</div><div class="n">${R2.sidak_p.toFixed(3)}</div><div class="l">${R2.n_positions_failing}/6 raw hits</div></div>
+        </div>
+        <table style="margin-top:12px"><thead><tr><th>Position</th><th class="sc">&chi;&sup2; / dof</th><th class="sc">p</th></tr></thead><tbody>${prow}</tbody></table>
+        <div style="color:var(--faint);font-size:11px;margin-top:8px">
+          Each cell of the number&times;position grid is compared with its exact theoretical rate as
+          z = (observed &minus; expected)/sd, over ${R2.draws.toLocaleString()} draws. Numbers are binned so every
+          &chi;&sup2; bin expects at least 5 — without that the test would look rigorous and mean nothing.
+          ${R2.verdict}
         </div>
       </div>`;
   }
@@ -705,6 +748,8 @@ keys.forEach((k,idx)=>{
       ${randCard}
 
       ${properCard}
+
+      ${resCard}
 
       ${ceilCard}
 

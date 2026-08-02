@@ -127,6 +127,11 @@ def cmd_bankroll(args) -> None:
     print(bankroll.format_report(bankroll.simulate(args.product)))
 
 
+def cmd_residual(args) -> None:
+    from ml import residual
+    print(residual.format_report(residual.summary(args.product)))
+
+
 def cmd_ceiling(args) -> None:
     from ml import ceiling
     print(ceiling.format_report(ceiling.with_observed(
@@ -478,6 +483,11 @@ def main() -> None:
     pbk = sub.add_parser("bankroll", help="simulate buying a line every draw")
     pbk.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
     pbk.set_defaults(func=cmd_bankroll)
+
+    pres = sub.add_parser("residual",
+                          help="does the observed number x position grid match theory?")
+    pres.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    pres.set_defaults(func=cmd_residual)
 
     pceil = sub.add_parser("ceiling",
                            help="best score a perfect model could reach, and its noise band")

@@ -136,9 +136,16 @@ sharper measurement and better decision rules, not as a route to an edge.
 
 ## A. Analytics (measure the position structure)
 
-- [ ] 12. **Residual map** — empirical grid minus `closed_form_grid`, as
-      standardized z-scores per cell, plus a χ² per position. Expect a noise
-      field with ~5% of cells past ±2σ. Turns the existing heatmap into a test.
+- [x] 12. **Residual map** ⭐ — `src/ml/residual.py`, `run.py residual`, dashboard
+      card, `tests/test_residual.py`. z = (observed − T·q)/√(T·q(1−q)) per cell.
+      6/55 over 1379 draws: mean z +0.021, |z|>2 in 5.0% of cells (expect 4.6%),
+      largest |z| = 3.28 — which sounds big until you price in 300 cells: p =
+      0.27. Two details that make it a real test rather than a number that looks
+      like one: numbers are **binned until each χ² bin expects ≥ 5** (most cells
+      have q < 0.01, where χ² is invalid), and the per-position p-values get a
+      **multiple-comparison correction** — 1 of 6 positions landed under p<0.05
+      in *both* games, but P(≥1 of 6) = 0.265 and Šidák turns p=0.0206 into
+      0.117. No deviation.
 - [ ] 13. **Per-position distributions** — box/violin of p1…p6 (observed vs
       theoretical mean and quartiles). Shows p1 is small, p6 is large, and each
       is far too wide to pin down.
@@ -160,9 +167,16 @@ sharper measurement and better decision rules, not as a route to an edge.
       correctly, **every predictor sits inside its band**, and the bands are far
       wider than the gaps between predictors — the quantitative reason the
       leaderboard keeps reshuffling.
-- [ ] 15. **Null distribution of k/6** — score N random tickets to get the full
-      distribution, then report each predictor's empirical percentile/p-value.
-      Much more informative than comparing to a single baseline number.
+- [x] 15. **Null distribution of k/6** ⭐ — `ceiling.simulate_null` +
+      `null_p_value`, shown in `run.py ceiling` and the dashboard.
+      Each predictor gets p = P(a random ticket scores this well over the same
+      number of draws).
+
+      **The project's best teaching moment lives here.** `fun-hot` scored
+      p = 0.0125 — by the usual α=0.05 that reads as a discovery. But it is the
+      best of **13** predictors, and correcting for that gives Šidák p = 0.151:
+      nothing. Test enough candidates and one always looks gifted. The dashboard
+      says exactly that next to the number.
 - [ ] 16. **Position autocorrelation** — corr(pos i at draw t, pos i at draw
       t−lag) for lags 1..10, per position. Expect ≈0: the draw has no memory.
 - [ ] 17. **Adjacent-gap distribution** — d_i = x_(i+1) − x_(i) observed vs
@@ -200,18 +214,22 @@ sharper measurement and better decision rules, not as a route to an edge.
       needed) and matches brute-force enumeration exactly on a random grid.
       Deliberately **not** registered as a predictor — it would duplicate
       `joint-grid` and add a fake name to the leaderboard.
-- [ ] 21. **Bayesian shrinkage grid** — Dirichlet–multinomial with the
-      closed-form grid as prior; posterior = shrunk empirical grid. The
-      principled fix for overfitting sparse cells, and shrinkage strength
-      becomes a tunable knob.
+- [~] 21. **Bayesian shrinkage grid** — *half done*: `ml.proper.shrunk_grid`
+      (Dirichlet with the closed-form grid as prior, strength=20) already exists
+      and is scored — it beat the raw empirical grid on log-loss (3.3801 vs
+      3.3811, 6/55). Remaining: sweep the strength parameter to pick it by
+      cross-validation rather than by hand, and optionally register it as a
+      predictor.
 - [ ] 22. **Positional Markov chain** — discrete P(x_i | x_(i−1)) transition
       matrices + Viterbi/beam search over ascending paths. Differs from the
       existing `chain-ridge` (regression) by being fully probabilistic.
 - [ ] 23. **Quantile / median regression per position** — predict the median or
       mode rather than the mean; better matched to an exact-match metric than
       ridge's squared-error target.
-- [ ] 24. **Global beam search** — instead of choosing each position greedily,
-      search the top-B ascending combinations by total grid log-probability.
+- ~~24. **Global beam search**~~ — **obsolete, superseded by #20.** Beam search
+      was only ever an approximation of "best ascending combination by total grid
+      probability"; the DP in `ml/optimal.py` returns that exactly in O(N·k).
+      There is nothing left for a heuristic search to find.
 - [ ] 25. **Copula / order-statistic resampling** — sample tickets preserving
       the dependence between positions, not just the marginals.
 - [ ] 26. **LightGBM per-position classifier** — stronger learner than the
