@@ -38,6 +38,15 @@ def _proper_summary(name: str, test_draws: int = 200):
         return None
 
 
+def _indep_summary(name: str):
+    """Does one draw predict the next? (best effort)"""
+    try:
+        from ml.independence import summary
+        return summary(name)
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def _overfit_summary(name: str):
     """In-sample vs out-of-sample by training size (best effort)."""
     try:
@@ -135,6 +144,7 @@ def _product_payload(name: str, scorecard: dict | None) -> dict:
         "residual": _residual_summary(name),
         "ev": ticket_ev.summary(name),
         "overfit": _overfit_summary(name),
+        "indep": _indep_summary(name),
         "ml": ml,
     }
 
@@ -677,6 +687,38 @@ keys.forEach((k,idx)=>{
       </div>`;
   }
 
+  let indepCard = '';
+  if(d.indep && d.indep.corr){
+    const I = d.indep, C2 = I.corr, W = C2.worst;
+    const olap = I.overlap.map(o=>
+      `<tr><td class="sc">${o.lag}</td><td class="sc">${o.mean.toFixed(4)}</td>
+       <td class="sc" style="color:var(--muted)">${o.z>=0?'+':''}${o.z.toFixed(2)}</td>
+       <td class="sc" style="color:${o.p<0.05?'var(--gold)':'var(--faint)'}">${o.p.toFixed(4)}</td></tr>`).join('');
+    indepCard = `
+      <div class="card col12">
+        <h3><span class="ic" style="background:${I.clean?'var(--mint)':'var(--hot)'}"></span>Does one draw predict the next?</h3>
+        <div class="kpis">
+          <div class="kpi"><div class="l">Correlations tested</div><div class="n">${C2.n_tests}</div></div>
+          <div class="kpi"><div class="l">Beyond 2&sigma;</div><div class="n">${C2.n_beyond_2sigma}</div><div class="l">expect ~${C2.expected_beyond_2sigma.toFixed(1)}</div></div>
+          <div class="kpi"><div class="l">Strongest r</div><div class="n">${W.r>=0?'+':''}${W.r.toFixed(4)}</div><div class="l">pos ${W.position}, lag ${W.lag}</div></div>
+          <div class="kpi"><div class="l">Šidák p</div><div class="n">${C2.sidak_p.toFixed(3)}</div><div class="l">corrected</div></div>
+        </div>
+        <table style="margin-top:12px"><thead><tr><th class="sc">Lag</th><th class="sc">Shared numbers</th><th class="sc">z</th><th class="sc">p</th></tr></thead>
+          <tbody>${olap}</tbody></table>
+        <div style="color:var(--faint);font-size:11px;margin-top:8px">
+          Every other test on this page checks whether the numbers are <i>distributed</i> right. This one checks
+          something they all miss: whether the past leaks into the future. A machine could produce a perfect-looking
+          distribution and still always follow 7 with 23 — nothing else here would notice.
+          Each sorted position is correlated with itself 1&ndash;${I.max_lag} draws back (${C2.n_tests} tests; the
+          strongest is r = ${W.r.toFixed(4)}, which becomes p = ${C2.sidak_p.toFixed(3)} once corrected for
+          running that many), and each draw's overlap with an earlier one is compared to the hypergeometric
+          expectation of ${I.overlap[0].expected.toFixed(4)} shared numbers${I.overlap_dist && I.overlap_dist.n ?
+          `, with the whole lag-1 overlap distribution &chi;&sup2;-tested (p = ${I.overlap_dist.p.toFixed(3)})` : ''}.
+          ${I.verdict}
+        </div>
+      </div>`;
+  }
+
   let overfitCard = '';
   if(d.overfit && (d.overfit.rows||[]).length){
     const O = d.overfit;
@@ -839,6 +881,8 @@ keys.forEach((k,idx)=>{
       ${resCard}
 
       ${ceilCard}
+
+      ${indepCard}
 
       ${overfitCard}
 

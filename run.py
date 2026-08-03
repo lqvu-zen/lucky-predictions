@@ -127,6 +127,12 @@ def cmd_bankroll(args) -> None:
     print(bankroll.format_report(bankroll.simulate(args.product)))
 
 
+def cmd_independence(args) -> None:
+    from ml import independence
+    print(independence.format_report(
+        independence.summary(args.product, max_lag=args.lags)))
+
+
 def cmd_overfit(args) -> None:
     from ml import genetic
     print(genetic.format_report(genetic.evaluate(args.product)))
@@ -495,6 +501,12 @@ def main() -> None:
     pbk = sub.add_parser("bankroll", help="simulate buying a line every draw")
     pbk.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
     pbk.set_defaults(func=cmd_bankroll)
+
+    pind = sub.add_parser("independence",
+                          help="does one draw predict the next? lag tests")
+    pind.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    pind.add_argument("--lags", type=int, default=10)
+    pind.set_defaults(func=cmd_independence)
 
     pof = sub.add_parser("overfit",
                          help="genetic-algorithm ticket: in-sample vs out-of-sample")

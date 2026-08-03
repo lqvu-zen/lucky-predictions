@@ -187,8 +187,30 @@ sharper measurement and better decision rules, not as a route to an edge.
       best of **13** predictors, and correcting for that gives Šidák p = 0.151:
       nothing. Test enough candidates and one always looks gifted. The dashboard
       says exactly that next to the number.
-- [ ] 16. **Position autocorrelation** — corr(pos i at draw t, pos i at draw
-      t−lag) for lags 1..10, per position. Expect ≈0: the draw has no memory.
+- [x] 16. **Independence between draws** ⭐ — `src/ml/independence.py`,
+      `run.py independence`, dashboard card, `tests/test_independence.py`.
+
+      **This closed the one real hole in the evidence.** Every other test checks a
+      *marginal* distribution; all of them would pass on a machine that produced
+      perfect-looking frequencies but always followed 7 with 23. Three direct
+      tests instead (6/55, 1379 draws):
+
+      - per-position autocorrelation, lags 1–10: 60 tests, 2 beyond 2σ (expect
+        2.7), strongest r = −0.0593 (p = 0.028 raw → **Šidák 0.818**)
+      - overlap with the draw L back vs Hypergeometric(N,k,k): lag 3 gave
+        p = 0.015 raw → **Šidák 0.140**
+      - shape of the lag-1 overlap distribution: χ² = 3.28, dof 3, **p = 0.351**
+        (observed [676, 516, 165, 20, 1] vs expected [665, 544, 151, 17.5, 0.8])
+
+      Note the overlap between two draws follows the *same* hypergeometric law as
+      "how many of your ticket's numbers come up" — comparing a fixed k-subset to
+      a fresh random one is the same problem either way.
+
+      `test_detects_a_planted_dependency` guards against a vacuous pass: it feeds
+      in draws whose smallest number follows a random walk and requires the module
+      to catch it (it does, |r| > 0.3). The first version of that test was itself
+      buggy — the planted "dependency" made position 1 constant, so its variance
+      was zero and no correlation could exist.
 - [ ] 17. **Adjacent-gap distribution** — d_i = x_(i+1) − x_(i) observed vs
       theoretical. A different lens on the same structure.
 - [x] 18. **Log-loss / Brier scoring of the grid** ⭐ — `src/ml/proper.py`,
