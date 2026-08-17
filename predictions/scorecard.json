@@ -1,209 +1,209 @@
 {
-  "generated": "2026-08-13T21:00:24.294948",
+  "generated": "2026-08-17T21:00:29.296729",
   "games": {
     "power_655": {
       "label": "Power 6/55",
       "models": {
         "chain-ridge": {
-          "scored": 18,
-          "mean_hits": 0.5,
-          "mean_pos_hits": 0.278,
-          "mean_pos_score": 0.0463,
+          "scored": 19,
+          "mean_hits": 0.526,
+          "mean_pos_hits": 0.316,
+          "mean_pos_score": 0.0526,
           "baseline_hits": 0.655,
           "best_hits": 3,
           "best_pos_hits": 3,
           "best_pos_count": 1,
-          "spent": 180000,
+          "spent": 190000,
           "won": 50000,
-          "net": -130000,
-          "return_pct": -72.2
+          "net": -140000,
+          "return_pct": -73.7
         },
         "consensus": {
-          "scored": 18,
-          "mean_hits": 0.556,
-          "mean_pos_hits": 0.278,
-          "mean_pos_score": 0.0463,
+          "scored": 19,
+          "mean_hits": 0.526,
+          "mean_pos_hits": 0.263,
+          "mean_pos_score": 0.0439,
           "baseline_hits": 0.655,
           "best_hits": 2,
           "best_pos_hits": 2,
           "best_pos_count": 1,
-          "spent": 180000,
+          "spent": 190000,
           "won": 0,
-          "net": -180000,
+          "net": -190000,
           "return_pct": -100.0
         },
         "fun-balanced": {
-          "scored": 18,
-          "mean_hits": 0.611,
-          "mean_pos_hits": 0.333,
-          "mean_pos_score": 0.0556,
+          "scored": 19,
+          "mean_hits": 0.632,
+          "mean_pos_hits": 0.368,
+          "mean_pos_score": 0.0614,
           "baseline_hits": 0.655,
           "best_hits": 2,
           "best_pos_hits": 2,
           "best_pos_count": 1,
-          "spent": 180000,
+          "spent": 190000,
           "won": 0,
-          "net": -180000,
+          "net": -190000,
           "return_pct": -100.0
         },
         "fun-cold": {
-          "scored": 18,
-          "mean_hits": 0.778,
-          "mean_pos_hits": 0.333,
-          "mean_pos_score": 0.0556,
+          "scored": 19,
+          "mean_hits": 0.737,
+          "mean_pos_hits": 0.316,
+          "mean_pos_score": 0.0526,
           "baseline_hits": 0.655,
           "best_hits": 2,
           "best_pos_hits": 1,
           "best_pos_count": 6,
-          "spent": 180000,
+          "spent": 190000,
           "won": 0,
-          "net": -180000,
+          "net": -190000,
           "return_pct": -100.0
         },
         "fun-hot": {
-          "scored": 18,
-          "mean_hits": 0.833,
-          "mean_pos_hits": 0.5,
-          "mean_pos_score": 0.0833,
+          "scored": 19,
+          "mean_hits": 0.789,
+          "mean_pos_hits": 0.474,
+          "mean_pos_score": 0.0789,
           "baseline_hits": 0.655,
           "best_hits": 3,
           "best_pos_hits": 2,
           "best_pos_count": 1,
-          "spent": 180000,
+          "spent": 190000,
           "won": 50000,
-          "net": -130000,
-          "return_pct": -72.2
+          "net": -140000,
+          "return_pct": -73.7
         },
         "fun-overdue": {
-          "scored": 18,
-          "mean_hits": 0.667,
-          "mean_pos_hits": 0.222,
-          "mean_pos_score": 0.037,
+          "scored": 19,
+          "mean_hits": 0.632,
+          "mean_pos_hits": 0.211,
+          "mean_pos_score": 0.0351,
           "baseline_hits": 0.655,
           "best_hits": 2,
           "best_pos_hits": 1,
           "best_pos_count": 4,
-          "spent": 180000,
+          "spent": 190000,
           "won": 0,
-          "net": -180000,
+          "net": -190000,
           "return_pct": -100.0
         },
         "fun-random": {
-          "scored": 18,
-          "mean_hits": 0.611,
-          "mean_pos_hits": 0.222,
-          "mean_pos_score": 0.037,
+          "scored": 19,
+          "mean_hits": 0.684,
+          "mean_pos_hits": 0.263,
+          "mean_pos_score": 0.0439,
           "baseline_hits": 0.655,
           "best_hits": 2,
           "best_pos_hits": 2,
           "best_pos_count": 1,
-          "spent": 180000,
+          "spent": 190000,
           "won": 0,
-          "net": -180000,
+          "net": -190000,
           "return_pct": -100.0
         },
         "gap-ridge": {
-          "scored": 18,
-          "mean_hits": 0.611,
-          "mean_pos_hits": 0.222,
-          "mean_pos_score": 0.037,
+          "scored": 19,
+          "mean_hits": 0.579,
+          "mean_pos_hits": 0.211,
+          "mean_pos_score": 0.0351,
           "baseline_hits": 0.655,
           "best_hits": 2,
           "best_pos_hits": 1,
           "best_pos_count": 4,
-          "spent": 180000,
+          "spent": 190000,
           "won": 0,
-          "net": -180000,
+          "net": -190000,
           "return_pct": -100.0
         },
         "joint-grid": {
-          "scored": 18,
-          "mean_hits": 0.556,
-          "mean_pos_hits": 0.389,
-          "mean_pos_score": 0.0648,
+          "scored": 19,
+          "mean_hits": 0.526,
+          "mean_pos_hits": 0.368,
+          "mean_pos_score": 0.0614,
           "baseline_hits": 0.655,
           "best_hits": 2,
           "best_pos_hits": 2,
           "best_pos_count": 1,
-          "spent": 180000,
+          "spent": 190000,
           "won": 0,
-          "net": -180000,
+          "net": -190000,
           "return_pct": -100.0
         },
         "perpos-clf": {
-          "scored": 10,
-          "mean_hits": 0.7,
-          "mean_pos_hits": 0.3,
-          "mean_pos_score": 0.05,
-          "baseline_hits": 0.655,
-          "best_hits": 2,
-          "best_pos_hits": 1,
-          "best_pos_count": 3,
-          "spent": 100000,
-          "won": 0,
-          "net": -100000,
-          "return_pct": -100.0
-        },
-        "positional-gb": {
-          "scored": 10,
-          "mean_hits": 0.8,
-          "mean_pos_hits": 0.4,
-          "mean_pos_score": 0.0667,
+          "scored": 11,
+          "mean_hits": 0.727,
+          "mean_pos_hits": 0.364,
+          "mean_pos_score": 0.0606,
           "baseline_hits": 0.655,
           "best_hits": 2,
           "best_pos_hits": 1,
           "best_pos_count": 4,
-          "spent": 100000,
+          "spent": 110000,
           "won": 0,
-          "net": -100000,
+          "net": -110000,
+          "return_pct": -100.0
+        },
+        "positional-gb": {
+          "scored": 11,
+          "mean_hits": 0.818,
+          "mean_pos_hits": 0.364,
+          "mean_pos_score": 0.0606,
+          "baseline_hits": 0.655,
+          "best_hits": 2,
+          "best_pos_hits": 1,
+          "best_pos_count": 4,
+          "spent": 110000,
+          "won": 0,
+          "net": -110000,
           "return_pct": -100.0
         },
         "positional-ridge": {
-          "scored": 18,
-          "mean_hits": 0.5,
-          "mean_pos_hits": 0.278,
-          "mean_pos_score": 0.0463,
+          "scored": 19,
+          "mean_hits": 0.526,
+          "mean_pos_hits": 0.316,
+          "mean_pos_score": 0.0526,
           "baseline_hits": 0.655,
           "best_hits": 3,
           "best_pos_hits": 3,
           "best_pos_count": 1,
-          "spent": 180000,
+          "spent": 190000,
           "won": 50000,
-          "net": -130000,
-          "return_pct": -72.2
+          "net": -140000,
+          "return_pct": -73.7
         },
         "sampler": {
-          "scored": 18,
-          "mean_hits": 0.444,
-          "mean_pos_hits": 0.167,
-          "mean_pos_score": 0.0278,
+          "scored": 19,
+          "mean_hits": 0.421,
+          "mean_pos_hits": 0.158,
+          "mean_pos_score": 0.0263,
           "baseline_hits": 0.655,
           "best_hits": 1,
           "best_pos_hits": 1,
           "best_pos_count": 3,
-          "spent": 180000,
+          "spent": 190000,
           "won": 0,
-          "net": -180000,
+          "net": -190000,
           "return_pct": -100.0
         }
       },
       "next_prediction": {
-        "target_date": "2026-08-15",
+        "target_date": "2026-08-18",
         "by_model": {
           "positional-ridge": [
-            8,
-            18,
+            9,
+            17,
             25,
             33,
-            43,
-            49
+            41,
+            48
           ],
           "positional-gb": [
-            8,
-            16,
-            24,
+            9,
+            17,
+            26,
             32,
-            40,
+            41,
             49
           ],
           "joint-grid": [
@@ -215,84 +215,84 @@
             55
           ],
           "gap-ridge": [
-            8,
-            18,
+            9,
+            17,
             26,
             33,
-            42,
+            40,
             49
           ],
           "chain-ridge": [
-            8,
-            18,
+            9,
+            17,
             25,
             33,
-            43,
-            49
+            41,
+            48
           ],
           "perpos-clf": [
-            7,
-            19,
-            25,
-            37,
-            49,
-            55
-          ],
-          "sampler": [
-            4,
-            19,
-            36,
-            42,
-            49,
+            5,
+            8,
+            22,
+            32,
+            35,
             53
           ],
+          "sampler": [
+            6,
+            17,
+            25,
+            31,
+            39,
+            46
+          ],
           "fun-random": [
-            5,
-            24,
-            27,
-            29,
-            42,
+            12,
+            17,
+            19,
+            28,
+            35,
             50
           ],
           "fun-hot": [
-            15,
-            24,
-            39,
-            45,
-            48,
-            53
-          ],
-          "fun-cold": [
-            19,
-            29,
-            31,
-            36,
-            39,
-            54
-          ],
-          "fun-overdue": [
-            12,
-            15,
             17,
-            26,
-            32,
-            51
-          ],
-          "fun-balanced": [
-            16,
             22,
             26,
             29,
             34,
             39
           ],
-          "consensus": [
-            8,
-            18,
-            19,
+          "fun-cold": [
             24,
             29,
-            49
+            34,
+            38,
+            51,
+            54
+          ],
+          "fun-overdue": [
+            4,
+            15,
+            17,
+            26,
+            54,
+            55
+          ],
+          "fun-balanced": [
+            1,
+            7,
+            8,
+            21,
+            28,
+            42
+          ],
+          "consensus": [
+            9,
+            17,
+            25,
+            26,
+            29,
+            33
           ]
         },
         "n_models": 12,
@@ -300,128 +300,116 @@
           "chain-ridge",
           "positional-ridge",
           "fun-hot",
-          "joint-grid",
           "fun-balanced",
+          "joint-grid",
           "consensus",
           "fun-random",
           "fun-cold",
+          "perpos-clf",
           "positional-gb",
           "fun-overdue",
           "gap-ridge",
-          "perpos-clf",
           "sampler"
         ],
         "model_stats": {
           "positional-ridge": {
             "best_pos_hits": 3,
             "best_pos_count": 1,
-            "mean_pos_score": 0.0463,
-            "scored": 18
+            "mean_pos_score": 0.0526,
+            "scored": 19
           },
           "positional-gb": {
             "best_pos_hits": 1,
             "best_pos_count": 4,
-            "mean_pos_score": 0.0667,
-            "scored": 10
+            "mean_pos_score": 0.0606,
+            "scored": 11
           },
           "joint-grid": {
             "best_pos_hits": 2,
             "best_pos_count": 1,
-            "mean_pos_score": 0.0648,
-            "scored": 18
+            "mean_pos_score": 0.0614,
+            "scored": 19
           },
           "gap-ridge": {
             "best_pos_hits": 1,
             "best_pos_count": 4,
-            "mean_pos_score": 0.037,
-            "scored": 18
+            "mean_pos_score": 0.0351,
+            "scored": 19
           },
           "chain-ridge": {
             "best_pos_hits": 3,
             "best_pos_count": 1,
-            "mean_pos_score": 0.0463,
-            "scored": 18
+            "mean_pos_score": 0.0526,
+            "scored": 19
           },
           "perpos-clf": {
             "best_pos_hits": 1,
-            "best_pos_count": 3,
-            "mean_pos_score": 0.05,
-            "scored": 10
+            "best_pos_count": 4,
+            "mean_pos_score": 0.0606,
+            "scored": 11
           },
           "sampler": {
             "best_pos_hits": 1,
             "best_pos_count": 3,
-            "mean_pos_score": 0.0278,
-            "scored": 18
+            "mean_pos_score": 0.0263,
+            "scored": 19
           },
           "fun-random": {
             "best_pos_hits": 2,
             "best_pos_count": 1,
-            "mean_pos_score": 0.037,
-            "scored": 18
+            "mean_pos_score": 0.0439,
+            "scored": 19
           },
           "fun-hot": {
             "best_pos_hits": 2,
             "best_pos_count": 1,
-            "mean_pos_score": 0.0833,
-            "scored": 18
+            "mean_pos_score": 0.0789,
+            "scored": 19
           },
           "fun-cold": {
             "best_pos_hits": 1,
             "best_pos_count": 6,
-            "mean_pos_score": 0.0556,
-            "scored": 18
+            "mean_pos_score": 0.0526,
+            "scored": 19
           },
           "fun-overdue": {
             "best_pos_hits": 1,
             "best_pos_count": 4,
-            "mean_pos_score": 0.037,
-            "scored": 18
+            "mean_pos_score": 0.0351,
+            "scored": 19
           },
           "fun-balanced": {
             "best_pos_hits": 2,
             "best_pos_count": 1,
-            "mean_pos_score": 0.0556,
-            "scored": 18
+            "mean_pos_score": 0.0614,
+            "scored": 19
           },
           "consensus": {
             "best_pos_hits": 2,
             "best_pos_count": 1,
-            "mean_pos_score": 0.0463,
-            "scored": 18
+            "mean_pos_score": 0.0439,
+            "scored": 19
           }
         },
         "consensus": [
           [
-            49,
-            6
+            17,
+            8
           ],
           [
-            8,
+            9,
             4
           ],
           [
-            29,
+            26,
             4
-          ],
-          [
-            18,
-            3
-          ],
-          [
-            19,
-            3
-          ],
-          [
-            24,
-            3
           ],
           [
             25,
             3
           ],
           [
-            26,
+            29,
             3
           ],
           [
@@ -429,19 +417,27 @@
             3
           ],
           [
-            39,
+            34,
             3
           ],
           [
-            42,
+            41,
             3
           ],
           [
-            15,
+            1,
             2
           ],
           [
-            16,
+            8,
+            2
+          ],
+          [
+            22,
+            2
+          ],
+          [
+            28,
             2
           ],
           [
@@ -449,19 +445,23 @@
             2
           ],
           [
-            34,
+            35,
             2
           ],
           [
-            36,
+            39,
             2
           ],
           [
-            43,
+            48,
             2
           ],
           [
-            53,
+            49,
+            2
+          ],
+          [
+            54,
             2
           ],
           [
@@ -469,15 +469,15 @@
             2
           ],
           [
-            1,
-            1
-          ],
-          [
             4,
             1
           ],
           [
             5,
+            1
+          ],
+          [
+            6,
             1
           ],
           [
@@ -493,15 +493,19 @@
             1
           ],
           [
-            17,
+            15,
             1
           ],
           [
-            22,
+            19,
             1
           ],
           [
-            27,
+            21,
+            1
+          ],
+          [
+            24,
             1
           ],
           [
@@ -509,7 +513,7 @@
             1
           ],
           [
-            37,
+            38,
             1
           ],
           [
@@ -517,15 +521,15 @@
             1
           ],
           [
-            45,
+            42,
+            1
+          ],
+          [
+            46,
             1
           ],
           [
             47,
-            1
-          ],
-          [
-            48,
             1
           ],
           [
@@ -537,23 +541,205 @@
             1
           ],
           [
-            54,
+            53,
             1
           ]
         ],
         "consensus_ticket": [
-          8,
-          18,
-          19,
-          24,
+          9,
+          17,
+          25,
+          26,
           29,
-          49
+          33
         ]
       },
-      "total_scored": 218,
+      "total_scored": 231,
       "pos_baseline": 0.391,
       "pos_baseline_score": 0.0651,
       "history": [
+        {
+          "date": "2026-08-15",
+          "actual": [
+            16,
+            20,
+            25,
+            27,
+            30,
+            50
+          ],
+          "preds": [
+            {
+              "model": "fun-random",
+              "ticket": [
+                5,
+                24,
+                27,
+                29,
+                42,
+                50
+              ],
+              "pos": 1,
+              "hits": 2
+            },
+            {
+              "model": "positional-ridge",
+              "ticket": [
+                8,
+                18,
+                25,
+                33,
+                43,
+                49
+              ],
+              "pos": 1,
+              "hits": 1
+            },
+            {
+              "model": "chain-ridge",
+              "ticket": [
+                8,
+                18,
+                25,
+                33,
+                43,
+                49
+              ],
+              "pos": 1,
+              "hits": 1
+            },
+            {
+              "model": "perpos-clf",
+              "ticket": [
+                7,
+                19,
+                25,
+                37,
+                49,
+                55
+              ],
+              "pos": 1,
+              "hits": 1
+            },
+            {
+              "model": "fun-balanced",
+              "ticket": [
+                16,
+                22,
+                26,
+                29,
+                34,
+                39
+              ],
+              "pos": 1,
+              "hits": 1
+            },
+            {
+              "model": "positional-gb",
+              "ticket": [
+                8,
+                16,
+                24,
+                32,
+                40,
+                49
+              ],
+              "pos": 0,
+              "hits": 1
+            },
+            {
+              "model": "joint-grid",
+              "ticket": [
+                1,
+                11,
+                29,
+                34,
+                47,
+                55
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "gap-ridge",
+              "ticket": [
+                8,
+                18,
+                26,
+                33,
+                42,
+                49
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "sampler",
+              "ticket": [
+                4,
+                19,
+                36,
+                42,
+                49,
+                53
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "fun-hot",
+              "ticket": [
+                15,
+                24,
+                39,
+                45,
+                48,
+                53
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "fun-cold",
+              "ticket": [
+                19,
+                29,
+                31,
+                36,
+                39,
+                54
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "fun-overdue",
+              "ticket": [
+                12,
+                15,
+                17,
+                26,
+                32,
+                51
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "consensus",
+              "ticket": [
+                8,
+                18,
+                19,
+                24,
+                29,
+                49
+              ],
+              "pos": 0,
+              "hits": 0
+            }
+          ]
+        },
         {
           "date": "2026-08-13",
           "actual": [
@@ -3642,7 +3828,8 @@
           "2026-08-06",
           "2026-08-08",
           "2026-08-11",
-          "2026-08-13"
+          "2026-08-13",
+          "2026-08-15"
         ],
         "series": {
           "chain-ridge": [
@@ -3663,7 +3850,8 @@
             0.0556,
             0.0521,
             0.049,
-            0.0463
+            0.0463,
+            0.0526
           ],
           "consensus": [
             0.0,
@@ -3683,7 +3871,8 @@
             0.0556,
             0.0521,
             0.049,
-            0.0463
+            0.0463,
+            0.0439
           ],
           "fun-balanced": [
             0.0,
@@ -3703,7 +3892,8 @@
             0.0667,
             0.0625,
             0.0588,
-            0.0556
+            0.0556,
+            0.0614
           ],
           "fun-cold": [
             0.0,
@@ -3723,7 +3913,8 @@
             0.0556,
             0.0521,
             0.0588,
-            0.0556
+            0.0556,
+            0.0526
           ],
           "fun-hot": [
             0.1667,
@@ -3743,7 +3934,8 @@
             0.0889,
             0.0938,
             0.0882,
-            0.0833
+            0.0833,
+            0.0789
           ],
           "fun-overdue": [
             0.0,
@@ -3763,7 +3955,8 @@
             0.0444,
             0.0417,
             0.0392,
-            0.037
+            0.037,
+            0.0351
           ],
           "fun-random": [
             0.0,
@@ -3783,7 +3976,8 @@
             0.0333,
             0.0312,
             0.0392,
-            0.037
+            0.037,
+            0.0439
           ],
           "gap-ridge": [
             0.0,
@@ -3803,7 +3997,8 @@
             0.0444,
             0.0417,
             0.0392,
-            0.037
+            0.037,
+            0.0351
           ],
           "joint-grid": [
             0.0,
@@ -3823,7 +4018,8 @@
             0.0778,
             0.0729,
             0.0686,
-            0.0648
+            0.0648,
+            0.0614
           ],
           "perpos-clf": [
             null,
@@ -3843,7 +4039,8 @@
             0.0476,
             0.0417,
             0.0556,
-            0.05
+            0.05,
+            0.0606
           ],
           "positional-gb": [
             null,
@@ -3863,7 +4060,8 @@
             0.0952,
             0.0833,
             0.0741,
-            0.0667
+            0.0667,
+            0.0606
           ],
           "positional-ridge": [
             0.0,
@@ -3883,7 +4081,8 @@
             0.0556,
             0.0521,
             0.049,
-            0.0463
+            0.0463,
+            0.0526
           ],
           "sampler": [
             0.1667,
@@ -3903,7 +4102,8 @@
             0.0333,
             0.0312,
             0.0294,
-            0.0278
+            0.0278,
+            0.0263
           ]
         }
       }
@@ -3912,190 +4112,190 @@
       "label": "Power 6/45",
       "models": {
         "chain-ridge": {
-          "scored": 16,
-          "mean_hits": 0.75,
-          "mean_pos_hits": 0.5,
-          "mean_pos_score": 0.0833,
+          "scored": 17,
+          "mean_hits": 0.765,
+          "mean_pos_hits": 0.529,
+          "mean_pos_score": 0.0882,
           "baseline_hits": 0.8,
           "best_hits": 2,
           "best_pos_hits": 1,
-          "best_pos_count": 8,
-          "spent": 160000,
+          "best_pos_count": 9,
+          "spent": 170000,
           "won": 0,
-          "net": -160000,
+          "net": -170000,
           "return_pct": -100.0
         },
         "consensus": {
-          "scored": 16,
-          "mean_hits": 0.812,
-          "mean_pos_hits": 0.438,
-          "mean_pos_score": 0.0729,
+          "scored": 17,
+          "mean_hits": 0.765,
+          "mean_pos_hits": 0.412,
+          "mean_pos_score": 0.0686,
           "baseline_hits": 0.8,
           "best_hits": 3,
           "best_pos_hits": 3,
           "best_pos_count": 1,
-          "spent": 160000,
+          "spent": 170000,
           "won": 30000,
-          "net": -130000,
-          "return_pct": -81.2
+          "net": -140000,
+          "return_pct": -82.4
         },
         "fun-balanced": {
-          "scored": 16,
-          "mean_hits": 0.812,
-          "mean_pos_hits": 0.438,
-          "mean_pos_score": 0.0729,
+          "scored": 17,
+          "mean_hits": 0.824,
+          "mean_pos_hits": 0.412,
+          "mean_pos_score": 0.0686,
           "baseline_hits": 0.8,
           "best_hits": 2,
           "best_pos_hits": 1,
           "best_pos_count": 7,
-          "spent": 160000,
+          "spent": 170000,
           "won": 0,
-          "net": -160000,
+          "net": -170000,
           "return_pct": -100.0
         },
         "fun-cold": {
-          "scored": 16,
-          "mean_hits": 0.688,
-          "mean_pos_hits": 0.375,
-          "mean_pos_score": 0.0625,
+          "scored": 17,
+          "mean_hits": 0.706,
+          "mean_pos_hits": 0.353,
+          "mean_pos_score": 0.0588,
           "baseline_hits": 0.8,
           "best_hits": 2,
           "best_pos_hits": 1,
           "best_pos_count": 6,
-          "spent": 160000,
+          "spent": 170000,
           "won": 0,
-          "net": -160000,
+          "net": -170000,
           "return_pct": -100.0
         },
         "fun-hot": {
-          "scored": 16,
-          "mean_hits": 1.125,
-          "mean_pos_hits": 0.5,
-          "mean_pos_score": 0.0833,
+          "scored": 17,
+          "mean_hits": 1.059,
+          "mean_pos_hits": 0.471,
+          "mean_pos_score": 0.0784,
           "baseline_hits": 0.8,
           "best_hits": 3,
           "best_pos_hits": 3,
           "best_pos_count": 1,
-          "spent": 160000,
+          "spent": 170000,
           "won": 30000,
-          "net": -130000,
-          "return_pct": -81.2
+          "net": -140000,
+          "return_pct": -82.4
         },
         "fun-overdue": {
-          "scored": 16,
-          "mean_hits": 0.5,
-          "mean_pos_hits": 0.375,
-          "mean_pos_score": 0.0625,
+          "scored": 17,
+          "mean_hits": 0.647,
+          "mean_pos_hits": 0.412,
+          "mean_pos_score": 0.0686,
           "baseline_hits": 0.8,
-          "best_hits": 2,
+          "best_hits": 3,
           "best_pos_hits": 1,
-          "best_pos_count": 6,
-          "spent": 160000,
-          "won": 0,
-          "net": -160000,
-          "return_pct": -100.0
+          "best_pos_count": 7,
+          "spent": 170000,
+          "won": 30000,
+          "net": -140000,
+          "return_pct": -82.4
         },
         "fun-random": {
-          "scored": 16,
-          "mean_hits": 0.812,
-          "mean_pos_hits": 0.438,
-          "mean_pos_score": 0.0729,
+          "scored": 17,
+          "mean_hits": 0.824,
+          "mean_pos_hits": 0.412,
+          "mean_pos_score": 0.0686,
           "baseline_hits": 0.8,
           "best_hits": 2,
           "best_pos_hits": 2,
           "best_pos_count": 1,
-          "spent": 160000,
+          "spent": 170000,
           "won": 0,
-          "net": -160000,
+          "net": -170000,
           "return_pct": -100.0
         },
         "gap-ridge": {
-          "scored": 16,
-          "mean_hits": 0.688,
-          "mean_pos_hits": 0.438,
-          "mean_pos_score": 0.0729,
+          "scored": 17,
+          "mean_hits": 0.647,
+          "mean_pos_hits": 0.412,
+          "mean_pos_score": 0.0686,
           "baseline_hits": 0.8,
           "best_hits": 2,
           "best_pos_hits": 1,
           "best_pos_count": 7,
-          "spent": 160000,
+          "spent": 170000,
           "won": 0,
-          "net": -160000,
+          "net": -170000,
           "return_pct": -100.0
         },
         "joint-grid": {
-          "scored": 16,
-          "mean_hits": 0.625,
-          "mean_pos_hits": 0.5,
-          "mean_pos_score": 0.0833,
+          "scored": 17,
+          "mean_hits": 0.588,
+          "mean_pos_hits": 0.471,
+          "mean_pos_score": 0.0784,
           "baseline_hits": 0.8,
           "best_hits": 1,
           "best_pos_hits": 1,
           "best_pos_count": 8,
-          "spent": 160000,
+          "spent": 170000,
           "won": 0,
-          "net": -160000,
+          "net": -170000,
           "return_pct": -100.0
         },
         "perpos-clf": {
-          "scored": 8,
-          "mean_hits": 1.0,
-          "mean_pos_hits": 0.375,
-          "mean_pos_score": 0.0625,
+          "scored": 9,
+          "mean_hits": 0.889,
+          "mean_pos_hits": 0.333,
+          "mean_pos_score": 0.0556,
           "baseline_hits": 0.8,
           "best_hits": 2,
           "best_pos_hits": 1,
           "best_pos_count": 3,
-          "spent": 80000,
+          "spent": 90000,
           "won": 0,
-          "net": -80000,
+          "net": -90000,
           "return_pct": -100.0
         },
         "positional-gb": {
-          "scored": 8,
-          "mean_hits": 0.75,
-          "mean_pos_hits": 0.5,
-          "mean_pos_score": 0.0833,
+          "scored": 9,
+          "mean_hits": 0.778,
+          "mean_pos_hits": 0.444,
+          "mean_pos_score": 0.0741,
           "baseline_hits": 0.8,
           "best_hits": 2,
           "best_pos_hits": 2,
           "best_pos_count": 1,
-          "spent": 80000,
+          "spent": 90000,
           "won": 0,
-          "net": -80000,
+          "net": -90000,
           "return_pct": -100.0
         },
         "positional-ridge": {
-          "scored": 16,
-          "mean_hits": 0.75,
-          "mean_pos_hits": 0.5,
-          "mean_pos_score": 0.0833,
+          "scored": 17,
+          "mean_hits": 0.765,
+          "mean_pos_hits": 0.529,
+          "mean_pos_score": 0.0882,
           "baseline_hits": 0.8,
           "best_hits": 2,
           "best_pos_hits": 1,
-          "best_pos_count": 8,
-          "spent": 160000,
+          "best_pos_count": 9,
+          "spent": 170000,
           "won": 0,
-          "net": -160000,
+          "net": -170000,
           "return_pct": -100.0
         },
         "sampler": {
-          "scored": 16,
-          "mean_hits": 0.75,
-          "mean_pos_hits": 0.438,
-          "mean_pos_score": 0.0729,
+          "scored": 17,
+          "mean_hits": 0.765,
+          "mean_pos_hits": 0.471,
+          "mean_pos_score": 0.0784,
           "baseline_hits": 0.8,
           "best_hits": 2,
           "best_pos_hits": 2,
           "best_pos_count": 2,
-          "spent": 160000,
+          "spent": 170000,
           "won": 0,
-          "net": -160000,
+          "net": -170000,
           "return_pct": -100.0
         }
       },
       "next_prediction": {
-        "target_date": "2026-08-14",
+        "target_date": "2026-08-19",
         "by_model": {
           "positional-ridge": [
             7,
@@ -4103,31 +4303,31 @@
             19,
             25,
             32,
-            39
+            40
           ],
           "positional-gb": [
-            6,
-            13,
+            5,
+            12,
             20,
-            26,
+            27,
             33,
-            40
+            39
           ],
           "joint-grid": [
             1,
-            10,
+            7,
             22,
             28,
             34,
             45
           ],
           "gap-ridge": [
-            6,
+            7,
             14,
             20,
             25,
-            32,
-            40
+            33,
+            41
           ],
           "chain-ridge": [
             7,
@@ -4135,71 +4335,71 @@
             19,
             25,
             32,
-            39
-          ],
-          "perpos-clf": [
-            3,
-            20,
-            21,
-            29,
-            32,
             40
           ],
-          "sampler": [
+          "perpos-clf": [
             2,
-            8,
-            29,
+            18,
+            20,
+            28,
+            38,
+            44
+          ],
+          "sampler": [
+            5,
+            19,
+            21,
+            27,
             31,
-            37,
             42
           ],
           "fun-random": [
-            2,
+            14,
+            18,
             23,
-            33,
-            35,
-            36,
-            39
+            25,
+            29,
+            33
           ],
           "fun-hot": [
-            5,
-            20,
-            22,
-            25,
-            36,
-            41
-          ],
-          "fun-cold": [
-            11,
-            20,
-            31,
-            36,
-            39,
-            43
-          ],
-          "fun-overdue": [
-            9,
-            13,
-            14,
-            23,
-            25,
+            18,
+            24,
+            28,
+            32,
+            42,
             44
           ],
-          "fun-balanced": [
-            9,
+          "fun-cold": [
+            4,
+            12,
+            13,
+            20,
+            44,
+            45
+          ],
+          "fun-overdue": [
+            1,
+            4,
+            5,
             14,
-            15,
-            24,
-            29,
-            41
+            18,
+            33
+          ],
+          "fun-balanced": [
+            3,
+            6,
+            14,
+            16,
+            23,
+            30
           ],
           "consensus": [
+            7,
             14,
+            18,
             20,
             25,
-            29,
-            32,
-            39
+            33
           ]
         },
         "n_models": 12,
@@ -4210,153 +4410,149 @@
           "positional-gb",
           "fun-random",
           "chain-ridge",
-          "joint-grid",
           "positional-ridge",
+          "joint-grid",
           "fun-balanced",
+          "fun-overdue",
           "gap-ridge",
           "fun-cold",
-          "fun-overdue",
           "perpos-clf"
         ],
         "model_stats": {
           "positional-ridge": {
             "best_pos_hits": 1,
-            "best_pos_count": 8,
-            "mean_pos_score": 0.0833,
-            "scored": 16
+            "best_pos_count": 9,
+            "mean_pos_score": 0.0882,
+            "scored": 17
           },
           "positional-gb": {
             "best_pos_hits": 2,
             "best_pos_count": 1,
-            "mean_pos_score": 0.0833,
-            "scored": 8
+            "mean_pos_score": 0.0741,
+            "scored": 9
           },
           "joint-grid": {
             "best_pos_hits": 1,
             "best_pos_count": 8,
-            "mean_pos_score": 0.0833,
-            "scored": 16
+            "mean_pos_score": 0.0784,
+            "scored": 17
           },
           "gap-ridge": {
             "best_pos_hits": 1,
             "best_pos_count": 7,
-            "mean_pos_score": 0.0729,
-            "scored": 16
+            "mean_pos_score": 0.0686,
+            "scored": 17
           },
           "chain-ridge": {
             "best_pos_hits": 1,
-            "best_pos_count": 8,
-            "mean_pos_score": 0.0833,
-            "scored": 16
+            "best_pos_count": 9,
+            "mean_pos_score": 0.0882,
+            "scored": 17
           },
           "perpos-clf": {
             "best_pos_hits": 1,
             "best_pos_count": 3,
-            "mean_pos_score": 0.0625,
-            "scored": 8
+            "mean_pos_score": 0.0556,
+            "scored": 9
           },
           "sampler": {
             "best_pos_hits": 2,
             "best_pos_count": 2,
-            "mean_pos_score": 0.0729,
-            "scored": 16
+            "mean_pos_score": 0.0784,
+            "scored": 17
           },
           "fun-random": {
             "best_pos_hits": 2,
             "best_pos_count": 1,
-            "mean_pos_score": 0.0729,
-            "scored": 16
+            "mean_pos_score": 0.0686,
+            "scored": 17
           },
           "fun-hot": {
             "best_pos_hits": 3,
             "best_pos_count": 1,
-            "mean_pos_score": 0.0833,
-            "scored": 16
+            "mean_pos_score": 0.0784,
+            "scored": 17
           },
           "fun-cold": {
             "best_pos_hits": 1,
             "best_pos_count": 6,
-            "mean_pos_score": 0.0625,
-            "scored": 16
+            "mean_pos_score": 0.0588,
+            "scored": 17
           },
           "fun-overdue": {
             "best_pos_hits": 1,
-            "best_pos_count": 6,
-            "mean_pos_score": 0.0625,
-            "scored": 16
+            "best_pos_count": 7,
+            "mean_pos_score": 0.0686,
+            "scored": 17
           },
           "fun-balanced": {
             "best_pos_hits": 1,
             "best_pos_count": 7,
-            "mean_pos_score": 0.0729,
-            "scored": 16
+            "mean_pos_score": 0.0686,
+            "scored": 17
           },
           "consensus": {
             "best_pos_hits": 3,
             "best_pos_count": 1,
-            "mean_pos_score": 0.0729,
-            "scored": 16
+            "mean_pos_score": 0.0686,
+            "scored": 17
           }
         },
         "consensus": [
           [
             14,
-            5
-          ],
-          [
-            20,
-            5
-          ],
-          [
-            25,
-            5
-          ],
-          [
-            32,
-            4
-          ],
-          [
-            39,
-            4
-          ],
-          [
-            29,
-            3
-          ],
-          [
-            36,
-            3
-          ],
-          [
-            40,
-            3
-          ],
-          [
-            2,
-            2
-          ],
-          [
-            6,
-            2
+            6
           ],
           [
             7,
-            2
+            4
           ],
           [
-            9,
-            2
+            18,
+            4
           ],
           [
-            13,
-            2
+            20,
+            4
+          ],
+          [
+            25,
+            4
+          ],
+          [
+            33,
+            4
+          ],
+          [
+            5,
+            3
           ],
           [
             19,
+            3
+          ],
+          [
+            28,
+            3
+          ],
+          [
+            32,
+            3
+          ],
+          [
+            44,
+            3
+          ],
+          [
+            1,
             2
           ],
           [
-            22,
+            4,
+            2
+          ],
+          [
+            12,
             2
           ],
           [
@@ -4364,19 +4560,23 @@
             2
           ],
           [
-            31,
+            27,
             2
           ],
           [
-            33,
+            40,
             2
           ],
           [
-            41,
+            42,
             2
           ],
           [
-            1,
+            45,
+            2
+          ],
+          [
+            2,
             1
           ],
           [
@@ -4384,23 +4584,15 @@
             1
           ],
           [
-            5,
+            6,
             1
           ],
           [
-            8,
+            13,
             1
           ],
           [
-            10,
-            1
-          ],
-          [
-            11,
-            1
-          ],
-          [
-            15,
+            16,
             1
           ],
           [
@@ -4408,15 +4600,23 @@
             1
           ],
           [
+            22,
+            1
+          ],
+          [
             24,
             1
           ],
           [
-            26,
+            29,
             1
           ],
           [
-            28,
+            30,
+            1
+          ],
+          [
+            31,
             1
           ],
           [
@@ -4424,43 +4624,213 @@
             1
           ],
           [
-            35,
+            38,
             1
           ],
           [
-            37,
+            39,
             1
           ],
           [
-            42,
-            1
-          ],
-          [
-            43,
-            1
-          ],
-          [
-            44,
-            1
-          ],
-          [
-            45,
+            41,
             1
           ]
         ],
         "consensus_ticket": [
+          7,
           14,
+          18,
           20,
           25,
-          29,
-          32,
-          39
+          33
         ]
       },
-      "total_scored": 192,
+      "total_scored": 205,
       "pos_baseline": 0.48,
       "pos_baseline_score": 0.08,
       "history": [
+        {
+          "date": "2026-08-14",
+          "actual": [
+            7,
+            9,
+            13,
+            31,
+            35,
+            44
+          ],
+          "preds": [
+            {
+              "model": "fun-overdue",
+              "ticket": [
+                9,
+                13,
+                14,
+                23,
+                25,
+                44
+              ],
+              "pos": 1,
+              "hits": 3
+            },
+            {
+              "model": "positional-ridge",
+              "ticket": [
+                7,
+                14,
+                19,
+                25,
+                32,
+                39
+              ],
+              "pos": 1,
+              "hits": 1
+            },
+            {
+              "model": "chain-ridge",
+              "ticket": [
+                7,
+                14,
+                19,
+                25,
+                32,
+                39
+              ],
+              "pos": 1,
+              "hits": 1
+            },
+            {
+              "model": "sampler",
+              "ticket": [
+                2,
+                8,
+                29,
+                31,
+                37,
+                42
+              ],
+              "pos": 1,
+              "hits": 1
+            },
+            {
+              "model": "positional-gb",
+              "ticket": [
+                6,
+                13,
+                20,
+                26,
+                33,
+                40
+              ],
+              "pos": 0,
+              "hits": 1
+            },
+            {
+              "model": "fun-random",
+              "ticket": [
+                2,
+                23,
+                33,
+                35,
+                36,
+                39
+              ],
+              "pos": 0,
+              "hits": 1
+            },
+            {
+              "model": "fun-cold",
+              "ticket": [
+                11,
+                20,
+                31,
+                36,
+                39,
+                43
+              ],
+              "pos": 0,
+              "hits": 1
+            },
+            {
+              "model": "fun-balanced",
+              "ticket": [
+                9,
+                14,
+                15,
+                24,
+                29,
+                41
+              ],
+              "pos": 0,
+              "hits": 1
+            },
+            {
+              "model": "joint-grid",
+              "ticket": [
+                1,
+                10,
+                22,
+                28,
+                34,
+                45
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "gap-ridge",
+              "ticket": [
+                6,
+                14,
+                20,
+                25,
+                32,
+                40
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "perpos-clf",
+              "ticket": [
+                3,
+                20,
+                21,
+                29,
+                32,
+                40
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "fun-hot",
+              "ticket": [
+                5,
+                20,
+                22,
+                25,
+                36,
+                41
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "consensus",
+              "ticket": [
+                14,
+                20,
+                25,
+                29,
+                32,
+                39
+              ],
+              "pos": 0,
+              "hits": 0
+            }
+          ]
+        },
         {
           "date": "2026-08-12",
           "actual": [
@@ -7183,7 +7553,8 @@
           "2026-08-02",
           "2026-08-05",
           "2026-08-07",
-          "2026-08-12"
+          "2026-08-12",
+          "2026-08-14"
         ],
         "series": {
           "chain-ridge": [
@@ -7202,7 +7573,8 @@
             0.0897,
             0.0952,
             0.0889,
-            0.0833
+            0.0833,
+            0.0882
           ],
           "consensus": [
             0.1667,
@@ -7220,7 +7592,8 @@
             0.0385,
             0.0476,
             0.0444,
-            0.0729
+            0.0729,
+            0.0686
           ],
           "fun-balanced": [
             0.0,
@@ -7238,7 +7611,8 @@
             0.0769,
             0.0833,
             0.0778,
-            0.0729
+            0.0729,
+            0.0686
           ],
           "fun-cold": [
             0.1667,
@@ -7256,7 +7630,8 @@
             0.0769,
             0.0714,
             0.0667,
-            0.0625
+            0.0625,
+            0.0588
           ],
           "fun-hot": [
             0.1667,
@@ -7274,7 +7649,8 @@
             0.0513,
             0.0595,
             0.0889,
-            0.0833
+            0.0833,
+            0.0784
           ],
           "fun-overdue": [
             0.0,
@@ -7292,7 +7668,8 @@
             0.0385,
             0.0476,
             0.0556,
-            0.0625
+            0.0625,
+            0.0686
           ],
           "fun-random": [
             0.1667,
@@ -7310,7 +7687,8 @@
             0.0769,
             0.0714,
             0.0778,
-            0.0729
+            0.0729,
+            0.0686
           ],
           "gap-ridge": [
             0.1667,
@@ -7328,7 +7706,8 @@
             0.0641,
             0.0714,
             0.0667,
-            0.0729
+            0.0729,
+            0.0686
           ],
           "joint-grid": [
             0.1667,
@@ -7346,7 +7725,8 @@
             0.0897,
             0.0833,
             0.0778,
-            0.0833
+            0.0833,
+            0.0784
           ],
           "perpos-clf": [
             null,
@@ -7364,7 +7744,8 @@
             0.1,
             0.0833,
             0.0714,
-            0.0625
+            0.0625,
+            0.0556
           ],
           "positional-gb": [
             null,
@@ -7382,7 +7763,8 @@
             0.0667,
             0.0556,
             0.0476,
-            0.0833
+            0.0833,
+            0.0741
           ],
           "positional-ridge": [
             0.1667,
@@ -7400,7 +7782,8 @@
             0.0897,
             0.0952,
             0.0889,
-            0.0833
+            0.0833,
+            0.0882
           ],
           "sampler": [
             0.0,
@@ -7418,7 +7801,8 @@
             0.0641,
             0.0595,
             0.0778,
-            0.0729
+            0.0729,
+            0.0784
           ]
         }
       }
