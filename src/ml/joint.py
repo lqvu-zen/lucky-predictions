@@ -18,6 +18,14 @@ Because that law is the same for every draw, the grid has no per-draw
 predictive power — it can't beat the baseline at hitting the actual numbers.
 What it gives is the most information-rich, and a lovely number×position
 heatmap. Honest verdict, best visual.
+
+The ticket: history is blended with the closed-form law (`proper.cv_grid`),
+the blend strength picked by walk-forward log-loss, then `optimal.optimal_ticket`
+takes the best ascending ticket. Cross-validation keeps choosing "all law, no
+history" — every bit of weight on past counts made the next draw's log-loss
+worse — so the ticket settles on the law's optimum and stays there. That is the
+best the k/6 score allows, and it is the same ticket every draw, because the
+law is.
 """
 from __future__ import annotations
 
@@ -87,13 +95,18 @@ def predict_ticket(grid, product: Product) -> list[int]:
 
 
 def predict_next(product_name: str) -> dict:
+    from ml.optimal import optimal_ticket
+    from ml.proper import cv_grid
     product = get_product(product_name)
-    grid = empirical_grid(product, smoothing=0.5)
-    ticket = predict_ticket(grid, product)
-    diff = max_abs_diff(empirical_grid(product), closed_form_grid(product), product)
+    draws = load_draws(product)
+    grid, strength = cv_grid(product, draws)
+    ticket = optimal_ticket(grid, product)
+    diff = max_abs_diff(empirical_grid(product, draws),
+                        closed_form_grid(product), product)
     return {"product": product.label, "model": "joint-grid",
             "target_date": product.next_draw_date().isoformat(),
-            "ticket": ticket, "grid_vs_theory_maxdiff": round(diff, 4)}
+            "ticket": ticket, "strength": strength,
+            "grid_vs_theory_maxdiff": round(diff, 4)}
 
 
 def grid_transposed(product: Product, draws=None):
@@ -114,17 +127,25 @@ def _bootstrap_ci(samples, n_boot=2000, seed=0):
 
 
 def backtest(product_name: str, test_draws: int = 120, min_history: int = 50) -> dict:
+    from ml import decode
+    from ml.optimal import optimal_ticket
+    from ml.proper import choose_strength, shrunk_grid
     product = get_product(product_name)
     draws = load_draws(product)
     k, N = product.main_count, product.max_value
     start = max(min_history, len(draws) - test_draws)
-    hits = []
+    # strength is chosen once, from draws before the test window only
+    strength = choose_strength(product, draws[:start])
+    hits, tickets, actuals = [], [], []
     total = len(draws) - start
     for j, t in enumerate(range(start, len(draws))):
-        grid = empirical_grid(product, draws[:t], smoothing=0.5)
-        ticket = predict_ticket(grid, product)
-        actual = set(draws[t]["main"][:k])
-        hits.append(len(actual.intersection(ticket)))
+        grid = (closed_form_grid(product) if strength == float("inf")
+                else shrunk_grid(product, draws[:t], strength=strength))
+        ticket = optimal_ticket(grid, product)
+        actual = draws[t]["main"][:k]
+        hits.append(len(set(actual).intersection(ticket)))
+        tickets.append(ticket)
+        actuals.append(actual)
         progress(j + 1, total, "joint backtest")
     if not hits:
         return {"product": product.label, "tested": 0}
@@ -137,12 +158,15 @@ def backtest(product_name: str, test_draws: int = 120, min_history: int = 50) ->
         "hits_lo": lo, "hits_hi": hi,
         "baseline_hits": base,
         "beats_baseline": lo > base,
+        "strength": strength,
+        **decode.pos_summary(tickets, actuals, product),
         "grid_vs_theory_maxdiff": round(
             max_abs_diff(empirical_grid(product), closed_form_grid(product), product), 4),
     }
 
 
 def format_backtest(r: dict) -> str:
+    from ml import decode
     if not r.get("tested"):
         return f"{r['product']}: not enough data."
     verdict = ("⚑ CI above baseline — investigate!" if r["beats_baseline"]
@@ -153,6 +177,9 @@ def format_backtest(r: dict) -> str:
         f"  mean hits            {r['mean_hits']:.3f}  "
         f"[95% CI {r['hits_lo']:.3f}, {r['hits_hi']:.3f}]",
         f"  random baseline      {r['baseline_hits']:.3f}   → {verdict}",
+        *decode.format_pos(r),
+        f"  prior strength       {r['strength']:g} (by walk-forward log-loss; "
+        f"inf = the exact law, no history)",
         f"  grid vs closed-form  max abs diff {r['grid_vs_theory_maxdiff']} "
         f"(≈0 means the learned grid is just the fixed order-statistic law)",
         "",

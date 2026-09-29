@@ -10,11 +10,16 @@ position's value from history, then assemble a valid ascending ticket.
 
 Why this is interesting: the ordered positions have real structure — p1 is
 almost always small, p6 almost always large (these are "order statistics").
-So this model produces natural-looking tickets like 4-15-24-33-42-51 by
-fitting those marginal distributions. But *which* value lands within each
-position's range on a given draw is still random, so it does NOT beat the
-baseline at matching the actual numbers — same honest verdict, prettier
-tickets. The per-position MAE just measures how well it fits the spread.
+So this model learns those marginal distributions. But *which* value lands
+within each position's range on a given draw is still random, so it does NOT
+beat the baseline at matching the actual numbers. The per-position MAE just
+measures how well it fits the spread.
+
+Decoding: a regressor predicts each position's *mean*, but the position score
+rewards the *most likely* value, and the two differ (6/55 position 1: mean ~8,
+mode 1). So the ticket comes from `ml.decode`: prediction + out-of-fold
+residuals -> a per-position distribution -> the optimal ascending ticket.
+Rounding the mean instead left this model at ~69% of the ceiling.
 
 Requires the optional `ml` extras: `uv sync --extra ml`.
 """
@@ -24,6 +29,7 @@ import numpy as np
 
 from analyze import load_draws
 from config import Product, get_product
+from ml import decode
 from ml.util import progress
 
 WINDOWS = (20, 50)
@@ -71,16 +77,33 @@ def build_dataset(product: Product, draws=None, min_history: int = 50):
     return np.vstack(X), np.vstack(Y), np.array(di), _feature_names(k)
 
 
+def make_ridge():
+    """Scaled ridge whose strength is picked by (efficient leave-one-out) CV.
+
+    With a hand-set alpha=1 on unscaled features the ridge chased noise, so its
+    predicted means wobbled draw to draw. Letting CV choose is the honest
+    setting: if the features carry no signal, CV picks heavy shrinkage by itself.
+    """
+    from sklearn.linear_model import RidgeCV
+    from sklearn.pipeline import make_pipeline
+    from sklearn.preprocessing import StandardScaler
+    return make_pipeline(StandardScaler(),
+                         RidgeCV(alphas=np.logspace(-2, 6, 17)))
+
+
 def _make_model(kind: str):
     from sklearn.ensemble import GradientBoostingRegressor
-    from sklearn.linear_model import Ridge
     from sklearn.multioutput import MultiOutputRegressor
     if kind == "ridge":
-        return Ridge(alpha=1.0)
+        return make_ridge()
     if kind == "gb":
+        # early stopping on a held-out 20%: trees are added only while they
+        # help unseen draws, so the booster stops fitting noise on its own
         return MultiOutputRegressor(
-            GradientBoostingRegressor(n_estimators=100, max_depth=3,
-                                      learning_rate=0.05))
+            GradientBoostingRegressor(n_estimators=300, max_depth=3,
+                                      learning_rate=0.05, subsample=0.8,
+                                      validation_fraction=0.2,
+                                      n_iter_no_change=10, random_state=0))
     raise ValueError("kind must be 'ridge' or 'gb'")
 
 
@@ -90,20 +113,11 @@ def train(X, Y, kind: str = "ridge"):
     return m
 
 
-def _valid_ticket(vals, n: int, k: int) -> list[int]:
-    """Round predictions to a strictly-increasing, distinct ticket in [1, n]."""
-    v = [int(round(x)) for x in vals]
-    v = [min(max(x, 1), n) for x in v]
-    v.sort()
-    for i in range(1, k):
-        if v[i] <= v[i - 1]:
-            v[i] = v[i - 1] + 1
-    if v[-1] > n:                       # overflowed the top; push down
-        v[-1] = n
-        for i in range(k - 2, -1, -1):
-            if v[i] >= v[i + 1]:
-                v[i] = v[i + 1] - 1
-    return [min(max(x, 1), n) for x in v]
+def train_with_residuals(X, Y, kind: str = "ridge"):
+    """(model, per-position out-of-fold residuals) for mode decoding."""
+    res = decode.residuals_from(lambda a, b: train(a, b, kind),
+                                lambda m, a: m.predict(a), X, Y)
+    return train(X, Y, kind), res
 
 
 def predict_next(product_name: str, kind: str = "ridge") -> dict:
@@ -112,13 +126,13 @@ def predict_next(product_name: str, kind: str = "ridge") -> dict:
     draws = load_draws(product)
     k, n = product.main_count, product.max_value
     X, Y, _, _ = build_dataset(product, draws)
-    model = train(X, Y, kind)
+    model, res = train_with_residuals(X, Y, kind)
 
     target = product.next_draw_date()
     sorted_all = np.array([sorted(d["main"]) for d in draws])
     xrow = _row_features(sorted_all, target.weekday(), k).reshape(1, -1)
     raw = model.predict(xrow)[0]
-    ticket = _valid_ticket(raw, n, k)
+    ticket = decode.decode(raw, res, product)
     return {"product": product.label, "model": f"positional-{kind}",
             "target_date": target.isoformat(),
             "raw": [round(float(x), 1) for x in raw], "ticket": ticket}
@@ -136,7 +150,7 @@ def backtest(product_name: str, kind: str = "ridge",
     uniq = di
     test_idx = uniq[-test_draws:] if test_draws < len(uniq) else uniq
 
-    hits_list = []
+    hits_list, tickets, actuals = [], [], []
     mae = np.zeros(k)
     model = None
     for step, t in enumerate(test_idx):
@@ -144,13 +158,16 @@ def backtest(product_name: str, kind: str = "ridge",
         if mask.sum() == 0:
             continue
         if model is None or step % retrain_every == 0:
-            model = train(X[mask], Y[mask], kind)
+            model, res = train_with_residuals(X[mask], Y[mask], kind)
         row = X[di == t]
         pred = model.predict(row)[0]
         actual_sorted = Y[di == t][0]
-        ticket = _valid_ticket(pred, n, k)
+        ticket = decode.decode(pred, res, product)
         hits_list.append(len(set(ticket).intersection(actual_sorted.tolist())))
-        mae += np.abs(np.array(ticket) - actual_sorted)
+        tickets.append(ticket)
+        actuals.append(actual_sorted.tolist())
+        # MAE of the mean prediction — what the regressor itself is fit to
+        mae += np.abs(np.array(pred) - actual_sorted)
         progress(step + 1, len(test_idx), f"positional {kind}")
 
     hits = np.array(hits_list, dtype=float)
@@ -168,6 +185,7 @@ def backtest(product_name: str, kind: str = "ridge",
         "baseline_hits": base,
         "beats_baseline": bool(lo > base),
         "pos_mae": (mae / m).round(2).tolist(),
+        **decode.pos_summary(tickets, actuals, product),
     }
 
 
@@ -183,6 +201,7 @@ def format_backtest(r: dict) -> str:
         f"[95% CI {r['hits_lo']:.3f}, {r['hits_hi']:.3f}]",
         f"  random baseline             {r['baseline_hits']:.3f}   → {verdict}",
         f"  per-position MAE            {r['pos_mae']}",
+        *decode.format_pos(r),
         "",
         "  Per-position MAE shows the model learns each position's typical "
         "range; the hits CI spanning the baseline shows it still can't pick "

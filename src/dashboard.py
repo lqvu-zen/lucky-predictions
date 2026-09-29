@@ -421,6 +421,10 @@ keys.forEach((k,idx)=>{
     const m = d.ml;
     const np = m.next_prediction;
     // leaderboard: rank every predictor by the k/6 position score, then hits
+    // expected k/6 under the exact law, as a share of the best possible
+    const ceil = m.pos_baseline_score || 0;
+    const expCell = x => (x==null || !ceil) ? '<span style="color:var(--faint)">–</span>'
+      : `${x.toFixed(3)} <span style="color:var(--faint)">(${Math.round(100*x/ceil)}%)</span>`;
     const ranked = Object.entries(m.models||{})
       .sort((a,b)=> (b[1].mean_pos_score - a[1].mean_pos_score) || (b[1].mean_hits - a[1].mean_hits));
     const rows = ranked.map(([k,v],i)=>{
@@ -430,6 +434,7 @@ keys.forEach((k,idx)=>{
       const pct = (v.mean_pos_score*100).toFixed(1);
       return `<tr ${lead}><td>${medal}</td><td>${isC?'⭐ ':''}<b${isC?' style="color:var(--gold)"':''}>${k}</b></td><td>${v.scored}</td>
         <td><b>${v.mean_pos_score.toFixed(3)}</b> <span style="color:var(--faint)">(${pct}%)</span></td>
+        <td>${expCell(v.law_pos_score)}</td>
         <td style="color:var(--muted)">${v.mean_hits.toFixed(2)}</td>
         <td style="color:var(--faint)">${v.best_pos_hits}/6</td></tr>`;
     }).join('');
@@ -440,9 +445,11 @@ keys.forEach((k,idx)=>{
     const nextLines = np ? npOrder.map((k,i)=>{
         const line = np.by_model[k]; if(!line) return '';
         const st = npStats[k];
+        const law = (np.law_scores||{})[k];
+        const exp = (law!=null && ceil) ? ` · exp ${Math.round(100*law/ceil)}%` : '';
         const badge = st
-          ? `<span style="color:var(--faint);font-size:11px;margin-left:6px" title="best ${st.best_pos_hits}/6, reached ${st.best_pos_count}x over ${st.scored} scored draws">${st.best_pos_hits}/6 &times;${st.best_pos_count}</span>`
-          : `<span style="color:var(--faint);font-size:11px;margin-left:6px">no record yet</span>`;
+          ? `<span style="color:var(--faint);font-size:11px;margin-left:6px" title="best ${st.best_pos_hits}/6, reached ${st.best_pos_count}x over ${st.scored} scored draws; exp = this ticket's expected k/6 as a share of the best possible">${st.best_pos_hits}/6 &times;${st.best_pos_count}${exp}</span>`
+          : `<span style="color:var(--faint);font-size:11px;margin-left:6px">no record yet${exp}</span>`;
         const top = (i===0 && st) ? ' style="background:rgba(55,224,166,.10)"' : '';
         return `<div class="row"${top}><div class="tag">${k}${badge}</div>${balls(line,null,true)}</div>`;
       }).join('') : '';
@@ -450,20 +457,20 @@ keys.forEach((k,idx)=>{
     mlCard = `
       <div class="card col12">
         <h3><span class="ic" style="background:var(--violet)"></span>Leaderboard ${scored?`· ${scored} predictions scored`:'· awaiting first results'}</h3>
-        ${rows ? `<table><thead><tr><th>#</th><th>Predictor</th><th>Scored</th><th>Score (k/6)</th><th>Hits</th><th>Best</th></tr></thead><tbody>${rows}</tbody></table>
-          <div style="color:var(--faint);font-size:11px;margin-top:10px"><b>Score = k / 6</b>, where k = correct number at the correct sorted position, averaged over scored draws (e.g. actual 1-2-3-4-5-6 vs guess 1-19-29-37-36-55 scores 1/6 ≈ 0.167). Best-possible if you always guessed each position's mode ≈ <b>${(m.pos_baseline_score||0).toFixed(3)}</b>. Hits = number overlap. The leader is luck: over enough draws every predictor converges — there is no real edge.</div>`
+        ${rows ? `<table><thead><tr><th>#</th><th>Predictor</th><th>Scored</th><th>Score (k/6)</th><th>Expected</th><th>Hits</th><th>Best</th></tr></thead><tbody>${rows}</tbody></table>
+          <div style="color:var(--faint);font-size:11px;margin-top:10px"><b>Score = k / 6</b>, where k = correct number at the correct sorted position, averaged over scored draws (e.g. actual 1-2-3-4-5-6 vs guess 1-19-29-37-36-55 scores 1/6 ≈ 0.167). Best-possible if you always guessed each position's mode ≈ <b>${(m.pos_baseline_score||0).toFixed(3)}</b>. <b>Expected</b> = the same score with the luck removed: each logged ticket graded by the exact position law, as a share of that best possible. It is the number that shows whether a change to a model helped — Score needs thousands of draws to say the same. Hits = number overlap. The leader is luck: over enough draws every predictor converges — there is no real edge.</div>`
           : `<div style="color:var(--muted);font-size:13px">No predictions scored yet. After the next draw is crawled and scored, the ranking appears here.</div>`}
         ${np && np.consensus ? (()=>{
           const maxV = np.consensus[0][1];
           const chips = np.consensus.slice(0,12).map(([num,c])=>
             `<span class="cnum" style="background:${heatColor(c/maxV)}" title="${c} of ${np.n_models} predictors">${pad(num)}<small>${c}</small></span>`).join('');
           return `<h3 style="margin-top:18px"><span class="ic" style="background:var(--gold)"></span>Consensus for next draw · ${np.target_date}</h3>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Top-6 by votes: ${balls(np.consensus_ticket,null,true)}</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Consensus ticket (votes per position): ${balls(np.consensus_ticket,null,true)}</div>
             <div class="cnums">${chips}</div>
-            <div style="color:var(--faint);font-size:11px;margin-top:8px">Numbers the most predictors (of ${np.n_models}) agree on. The small figure is the vote count. Consensus is just aggregation — it still can't beat the odds.</div>`;
+            <div style="color:var(--faint);font-size:11px;margin-top:8px">Numbers the most predictors (of ${np.n_models}) agree on; the small figure is the vote count. The ticket counts votes per <i>position</i> (number v at sorted spot p), since that is what the score grades. Consensus is just aggregation — it still can't beat the odds.</div>`;
         })() : ''}
         ${np ? `<h3 style="margin-top:18px"><span class="ic" style="background:var(--mint)"></span>Each predictor · ${np.target_date}</h3><div class="pred">${nextLines}</div>
-          <div style="color:var(--faint);font-size:11px;margin-top:8px">Ordered by track record: highest best-ever k/6 first, then how many times that best was reached. The badge reads best/6 &times; times. Ordering is cosmetic — a predictor's past position-accuracy says nothing about the next draw.</div>` : ''}
+          <div style="color:var(--faint);font-size:11px;margin-top:8px">Ordered by track record: highest best-ever k/6 first, then how many times that best was reached. The badge reads best/6 &times; times. Ordering is cosmetic — a predictor's past position-accuracy says nothing about the next draw. <i>exp</i> = this ticket's expected score as a share of the best possible.</div>` : ''}
       </div>`;
   }
 

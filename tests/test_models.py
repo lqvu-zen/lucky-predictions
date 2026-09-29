@@ -38,3 +38,19 @@ def test_ml_models_valid():
     _assert_valid(positional.predict_next("power_655")["ticket"], p)
     _assert_valid(gap.predict_next("power_655")["ticket"], p)
     _assert_valid(chain.predict_next("power_655")["ticket"], p)
+
+
+@pytest.mark.parametrize("kind", ["logreg", "hgb", "mlp"])
+def test_classifier_tickets_valid(kind):
+    pytest.importorskip("sklearn")
+    from ml import perpos
+    p = get_product("power_645")
+    _assert_valid(perpos.predict_next("power_645", kind=kind)["ticket"], p)
+
+
+def test_joint_ticket_is_near_the_ceiling():
+    # the joint grid's ticket should be (close to) the law's optimum
+    from ml.decode import ceiling_score, law_pos_score
+    p = get_product("power_655")
+    t = joint.predict_next("power_655")["ticket"]
+    assert law_pos_score(t, p) >= 0.97 * ceiling_score(p)

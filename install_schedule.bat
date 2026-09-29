@@ -1,14 +1,14 @@
 @echo off
 REM ============================================================
 REM  Registers a Windows scheduled task that runs daily.bat
-REM  every evening at 21:00 (9 PM). Double-click this once.
-REM  To pick another time, change 21:00 below and re-run.
+REM  every evening at 20:00 (8 PM). Double-click this once.
+REM  To pick another time, change 20:00 below and re-run.
 REM ============================================================
 setlocal
 cd /d "%~dp0"
 
 set "TASKNAME=LuckyDaily"
-set "RUNTIME=21:00"
+set "RUNTIME=20:00"
 set "SCRIPT=%~dp0daily.bat"
 
 schtasks /create /tn "%TASKNAME%" /tr "\"%SCRIPT%\"" /sc daily /st %RUNTIME% /f

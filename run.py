@@ -186,7 +186,8 @@ def cmd_ml_predict_joint(args) -> None:
     from ml import joint
     e = joint.predict_next(args.product)
     print(f"\n{e['product']} - joint number x position model, next draw {e['target_date']}:")
-    print("  ticket (per-position modes):", _fmt_line(e["ticket"]))
+    print("  ticket (optimal for the grid):", _fmt_line(e["ticket"]))
+    print(f"  prior strength (CV): {e['strength']:g}  (inf = the exact law, no history)")
     print(f"  learned grid vs closed-form law: max abs diff = {e['grid_vs_theory_maxdiff']}")
     print("\n(The grid is the fixed order-statistic law - great to visualize, no real edge.)")
 
@@ -249,14 +250,18 @@ def cmd_ml_backtest_clf(args) -> None:
     _need_ml()
     from ml import perpos
     print()
-    print(perpos.format_backtest(perpos.backtest(args.product, test_draws=args.test)))
+    for kind in (list(perpos.KINDS) if args.kind == "all" else [args.kind]):
+        print(perpos.format_backtest(
+            perpos.backtest(args.product, kind=kind, test_draws=args.test)))
+        print()
 
 
 def cmd_ml_predict_clf(args) -> None:
     _need_ml()
     from ml import perpos
-    e = perpos.predict_next(args.product)
-    print(f"\n{e['product']} - per-position classifier, next draw {e['target_date']}:")
+    e = perpos.predict_next(args.product, kind=args.kind)
+    print(f"\n{e['product']} - per-position classifier ({e['model']}), "
+          f"next draw {e['target_date']}:")
     print("  ticket:", _fmt_line(e["ticket"]))
     print("\n(A trained classifier per position - for fun, no real edge.)")
 
@@ -277,12 +282,13 @@ def cmd_ml_predict_sampler(args) -> None:
 
 def _run_ml_loop(verbose=True):
     """Score predictions whose draw has happened, then log a fresh prediction
-    for the next draw of each game (positional ridge/gb + joint). Rebuilds and
-    returns the scorecard. Requires the ML extras (positional)."""
+    for the next draw of each game from every predictor (models, fun lines,
+    consensus). Rebuilds and returns the scorecard. Requires the ML extras."""
     from datetime import datetime as _dt
+    from functools import partial
 
-    from ml import (chain, gap, joint, ledger, perpos, positional, sampler,
-                    score)
+    from ml import (chain, decode, gap, joint, ledger, perpos, positional,
+                    sampler, score)
 
     newly = score.score_pending()
     if verbose and newly:
@@ -307,12 +313,17 @@ def _run_ml_loop(verbose=True):
             if verbose:
                 print(f"[predict] {name} {model} -> {target}: {e['ticket']}")
 
-        for mod, model in ((joint, "joint-grid"), (gap, "gap-ridge"),
-                           (chain, "chain-ridge"), (perpos, "perpos-clf"),
-                           (sampler, "sampler")):
+        for model, predict_fn in (
+                ("joint-grid", joint.predict_next),
+                ("gap-ridge", gap.predict_next),
+                ("chain-ridge", chain.predict_next),
+                ("perpos-clf", partial(perpos.predict_next, kind="logreg")),
+                ("perpos-hgb", partial(perpos.predict_next, kind="hgb")),
+                ("perpos-mlp", partial(perpos.predict_next, kind="mlp")),
+                ("sampler", sampler.predict_next)):
             if (name, model, target) in pending:
                 continue
-            e = mod.predict_next(name)
+            e = predict_fn(name)
             ledger.append({"game": name, "target_date": e["target_date"],
                            "model": model, "version": version, "ticket": e["ticket"]})
             if verbose:
@@ -328,19 +339,15 @@ def _run_ml_loop(verbose=True):
             ledger.append({"game": name, "target_date": target,
                            "model": model, "version": version, "ticket": lines[0]})
 
-        # consensus: the top-k numbers by vote across every other predictor for
+        # consensus: a position-aware vote across every other predictor for
         # this draw, saved as its own prediction so it's scored too
         if (name, "consensus", target) not in pending:
-            k = get_product(name).main_count
-            votes: dict[int, int] = {}
-            for e in ledger.load():
-                if (e["game"] == name and e["target_date"] == target
-                        and e.get("model") != "consensus" and not e.get("scored")):
-                    for num in (e.get("ticket") or []):
-                        votes[num] = votes.get(num, 0) + 1
-            if votes:
-                top = sorted(votes.items(), key=lambda kv: (-kv[1], kv[0]))[:k]
-                ticket = sorted(int(n) for n, _ in top)
+            voters = [e["ticket"] for e in ledger.load()
+                      if e["game"] == name and e["target_date"] == target
+                      and e.get("model") != "consensus" and not e.get("scored")
+                      and e.get("ticket")]
+            if voters:
+                ticket = decode.consensus_ticket(voters, get_product(name))
                 ledger.append({"game": name, "target_date": target,
                                "model": "consensus", "version": version, "ticket": ticket})
                 if verbose:
@@ -588,10 +595,12 @@ def main() -> None:
     pbcl = sub.add_parser("ml-backtest-clf", help="per-position classifier backtest")
     pbcl.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
     pbcl.add_argument("--test", type=int, default=120)
+    pbcl.add_argument("--kind", choices=["logreg", "hgb", "mlp", "all"], default="logreg")
     pbcl.set_defaults(func=cmd_ml_backtest_clf)
 
     ppcl = sub.add_parser("ml-predict-clf", help="per-position classifier next-draw ticket")
     ppcl.add_argument("product", nargs="?", choices=list(PRODUCTS), default="power_655")
+    ppcl.add_argument("--kind", choices=["logreg", "hgb", "mlp"], default="logreg")
     ppcl.set_defaults(func=cmd_ml_predict_clf)
 
     pbs = sub.add_parser("ml-backtest-sampler", help="empirical position sampler backtest")

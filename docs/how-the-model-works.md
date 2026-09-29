@@ -1,6 +1,6 @@
 # How the models work — and how we know they don't
 
-This project keeps six **position-based** models. They all sort each draw's six
+This project keeps six families of **position-based** models (nine predictors). They all sort each draw's six
 numbers ascending (p1 < p2 < … < p6) and reason about *where* numbers land. None
 of them beats random odds, and most of the project's effort goes into
 **demonstrating that rigorously** rather than into the models themselves.
@@ -27,14 +27,16 @@ all arrive at the same place.
 
 ---
 
-## The six models
+## The six model families
 
 ### 1. Positional regression — `ml/positional.py`
 
 Six regressors (`ridge` / `gb`), one per ordered position, predicting that
-position's value from rolling means, the previous draw, and the weekday. Squared
-error is minimised by predicting the mean, and the features carry no signal, so
-each regressor falls back to that position's historical average:
+position's value from rolling means, the previous draw, and the weekday. Ridge
+picks its own strength by cross-validation and the booster stops adding trees
+when a held-out 20% stops improving. Squared error is minimised by predicting
+the mean, and the features carry no signal, so each regressor falls back to that
+position's historical average:
 
 ```
 Position:               p1    p2    p3    p4    p5    p6
@@ -43,7 +45,8 @@ Historical mean:        8.2  16.3  24.5  32.4  40.3  47.9
 Theoretical (uniform):  8.0  16.0  24.0  32.0  40.0  48.0   (= (N+1)·i/(k+1))
 ```
 
-All three rows nearly coincide. Prettier tickets, no edge.
+All three rows nearly coincide. The ticket is *not* those means rounded — see
+[Mean vs mode](#the-decision-matters-mean-vs-mode) below.
 
 ### 2. Joint number×position grid — `ml/joint.py`
 
@@ -51,6 +54,12 @@ Maximum-likelihood estimate of the full N×6 grid: count how often each number
 landed at each sorted position, normalise. Pure counting, no ML. It reproduces
 the closed-form law to a max absolute difference of ~0.015 — the data is just
 re-estimating a formula we already know. Renders as the dashboard heatmap.
+
+For its ticket the counts are blended with the closed-form law, and the blend
+is chosen by walk-forward log-loss (`proper.choose_strength`). On both games the
+loss falls steadily as weight moves from history to the law, and CV picks the
+law outright (6/55: raw counts 3.3873 nats → law 3.3630). So the joint model's
+ticket is the law's optimum — `1-11-22-33-44-55` for 6/55 — every draw.
 
 ### 3. Gap / spacing — `ml/gap.py`
 
@@ -63,11 +72,24 @@ structure.
 Predicts p1, then each position conditioned on the previous one, respecting the
 ascending order.
 
-### 5. Per-position classifier — `ml/perpos.py`
+### 5. Per-position classifiers — `ml/perpos.py`
 
-A LogisticRegression per position predicting *which number* lands there — the
-trained-ML version of the joint grid. Its learned probabilities converge to the
-same order-statistic marginals.
+A classifier per position predicting *which number* lands there — the
+trained-ML version of the joint grid. Three learners: logistic regression
+(`perpos-clf`), histogram gradient boosting (`perpos-hgb`) and a small neural
+network (`perpos-mlp`). Settings came from 5-fold CV log-loss on 6/55; the
+reference is "ignore the features, use each position's frequencies" (3.3895):
+
+| learner | CV log-loss |
+|---|---:|
+| logistic, old (unscaled, C = 1) | 3.8228 |
+| logistic, scaled, C = 1e-4 | 3.4056 |
+| MLP, 32 hidden, α = 30 | 3.4094 |
+| HistGB, 10 rounds, depth 2 | 3.4194 |
+
+Every learner improved the more it was told to ignore its features, and none
+beat plain frequencies. A stronger learner is not a route to an edge; it is a
+more expensive way to rediscover the same position law.
 
 ### 6. Empirical sampler — `ml/sampler.py`
 
@@ -75,10 +97,47 @@ Samples each position from its real historical distribution instead of taking
 the mode. Produces varied but position-realistic tickets.
 
 Plus five **for-fun heuristic lines** (`random / hot / cold / overdue /
-balanced`) and a **consensus** ticket built from the numbers most predictors
-agree on.
+balanced`) and a **consensus** ticket: every other predictor votes for number v
+*at position p*, and the best ascending ticket is taken from those votes.
 
 ---
+
+## The decision matters: mean vs mode
+
+The k/6 score counts exact matches, and for an exact match the best guess is the
+*most likely* value, not the average. The position law is skewed at the ends: in
+6/55, position 1 averages 8 (P = 5.3%) but its most likely value is 1 (P = 10.9%).
+The regression models used to round their predicted means, which put them at
+~69% of the ceiling — no better than a random ticket.
+
+`ml/decode.py` fixes the decision without touching what the models learn: a
+model's prediction plus its own **out-of-fold residuals** form a distribution per
+position, and the optimal ascending ticket is read off that. A Gaussian-kernel
+smoothing of the residuals was tried and was *worse* (92.7% vs 95.2% in
+simulation) because it drags position 1's mode from 1 to 2, so it is a plain
+histogram.
+
+To see whether a change helped, each ticket is graded by its **expected** k/6
+under the exact law (`decode.law_pos_score`). Realized scores over 30 draws are
+mostly luck; this number has none. Expected score as a share of the ceiling,
+120-draw walk-forward:
+
+| predictor | before | after (6/55) | after (6/45) |
+|---|---:|---:|---:|
+| positional-ridge | 69% | 98% | 98% |
+| positional-gb | 69% | 97% | 98% |
+| chain-ridge | 69% | 95% | 98% |
+| gap-ridge | 70% | 98% | 98% |
+| perpos-clf | 84% | 98% | 99% |
+| perpos-hgb (new) | — | 97% | 96% |
+| perpos-mlp (new) | — | 98% | 98% |
+| joint-grid | 98% | 100% | 100% |
+| consensus | 63% | position vote | position vote |
+
+("before" is the average over each predictor's logged 6/55 tickets.) Every model
+now sits just under the ceiling and none can pass it: the ceiling is the law's
+own best ticket. Mean *hits* did not change and cannot — any ticket averages
+`k²/N`.
 
 ## Turning a grid into a ticket — and the limit of that
 
@@ -91,11 +150,13 @@ it in O(N·k) — `ml/optimal.py`:
 dp[p][v] = grid[v][p] + max over v' < v of dp[p-1][v']
 ```
 
-The greedy per-position pick that the other models use turns out to be **already
-optimal** on this grid family (its columns are ordered by monotone likelihood
+The greedy per-position pick turns out to be **already optimal** on the smooth
+grids (theory, empirical, shrunk) (its columns are ordered by monotone likelihood
 ratio, so argmaxes never collide). Verified, not assumed: the DP strictly beats
 greedy on a hand-built adversarial grid and matches brute-force enumeration
-exactly on a random one (`tests/test_optimal.py`).
+exactly on a random one (`tests/test_optimal.py`). The models use the DP
+anyway: residual and classifier grids are noisier, and there greedy is not
+guaranteed.
 
 ---
 
@@ -193,6 +254,9 @@ scored after (`ml/score.py`) two ways:
 - **Hits** — number overlap, 0–6. Random baseline `k²/N` (0.655 for 6/55).
 - **Pos-hits** — correct number at the correct sorted position. Reported as a
   k/6 score.
+- **Expected** — the k/6 score each logged ticket *should* get under the exact
+  law, as a share of the ceiling. Same ranking as pos-hits in the long run,
+  without waiting thousands of draws for the luck to wash out.
 
 Backtests add bootstrap 95% CIs. For a fair lottery, *any* fixed ticket has
 expected hits of exactly `k²/N`, so modelling position structure in more detail
@@ -211,6 +275,7 @@ expected value.
 ```bash
 uv run python run.py ml-predict-pos    power_655   # a model's next ticket
 uv run python run.py ml-backtest-pos   power_655   # walk-forward, with CIs
+uv run python run.py ml-backtest-clf   power_655 --kind all   # the three classifiers
 uv run python run.py proper-score      power_655   # log-loss vs the entropy floor
 uv run python run.py ceiling           power_655   # ceiling, bands, p-values
 uv run python run.py residual          power_655   # grid vs theory

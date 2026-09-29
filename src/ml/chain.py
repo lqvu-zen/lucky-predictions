@@ -8,7 +8,9 @@ positions of the same draw.
 
 Because the draw is random the conditional means still collapse to the usual
 tidy spread, so it lands on the baseline like the rest — a more sophisticated
-framing, same honest result. Needs the ML extras (`uv sync --extra ml`).
+framing, same honest result. The ticket is mode-decoded from the predicted
+means + out-of-fold residuals (see `ml.decode`). Needs the ML extras
+(`uv sync --extra ml`).
 """
 from __future__ import annotations
 
@@ -18,7 +20,8 @@ import numpy as np
 
 from analyze import load_draws
 from config import Product, get_product
-from ml.positional import _row_features, _valid_ticket
+from ml import decode
+from ml.positional import _row_features, make_ridge
 from ml.util import progress
 
 
@@ -37,20 +40,25 @@ def build_base(product: Product, draws=None, min_history: int = 50):
 
 def train(Xbase, Y, k):
     """One regressor per position; position i also sees positions 0..i-1."""
-    from sklearn.linear_model import Ridge
     models = []
     for i in range(k):
         Xi = np.hstack([Xbase, Y[:, :i]]) if i > 0 else Xbase
-        models.append(Ridge(alpha=1.0).fit(Xi, Y[:, i]))
+        models.append(make_ridge().fit(Xi, Y[:, i]))
     return models
 
 
-def _predict_row(models, xbase_row, n, k):
-    prev = []
-    for i in range(k):
-        xi = np.hstack([xbase_row, np.array(prev, dtype=float)]) if i > 0 else xbase_row
-        prev.append(float(models[i].predict(xi.reshape(1, -1))[0]))
-    return _valid_ticket(prev, n, k), prev
+def predict_mu(models, Xbase):
+    """Chained means for each row: position i sees the predicted 0..i-1."""
+    prev = np.zeros((len(Xbase), 0))
+    for m in models:
+        col = m.predict(np.hstack([Xbase, prev]))
+        prev = np.hstack([prev, col.reshape(-1, 1)])
+    return prev
+
+
+def train_with_residuals(Xbase, Y, k):
+    res = decode.residuals_from(lambda a, b: train(a, b, k), predict_mu, Xbase, Y)
+    return train(Xbase, Y, k), res
 
 
 def predict_next(product_name: str) -> dict:
@@ -58,11 +66,12 @@ def predict_next(product_name: str) -> dict:
     draws = load_draws(product)
     k, n = product.main_count, product.max_value
     Xb, Y, _ = build_base(product, draws)
-    models = train(Xb, Y, k)
+    models, res = train_with_residuals(Xb, Y, k)
     target = product.next_draw_date()
     S = np.array([sorted(d["main"]) for d in draws])
     xrow = _row_features(S, target.weekday(), k)
-    ticket, raw = _predict_row(models, xrow, n, k)
+    raw = [float(v) for v in predict_mu(models, xrow.reshape(1, -1))[0]]
+    ticket = decode.decode(raw, res, product)
     return {"product": product.label, "model": "chain-ridge",
             "target_date": target.isoformat(), "ticket": ticket,
             "raw": [round(v, 1) for v in raw]}
@@ -77,16 +86,18 @@ def backtest(product_name: str, test_draws: int = 120, retrain_every: int = 20,
     if len(di) == 0:
         return {"product": product.label, "tested": 0}
     test_idx = di[-test_draws:] if test_draws < len(di) else di
-    hits, models = [], None
+    hits, tickets, actuals, models = [], [], [], None
     for step, t in enumerate(test_idx):
         mask = di < t
         if mask.sum() == 0:
             continue
         if models is None or step % retrain_every == 0:
-            models = train(Xb[mask], Y[mask], k)
-        ticket, _ = _predict_row(models, Xb[di == t][0], n, k)
-        actual = set(draws[int(t)]["main"][:k])
-        hits.append(len(actual.intersection(ticket)))
+            models, res = train_with_residuals(Xb[mask], Y[mask], k)
+        ticket = decode.decode(predict_mu(models, Xb[di == t])[0], res, product)
+        actual = draws[int(t)]["main"][:k]
+        hits.append(len(set(actual).intersection(ticket)))
+        tickets.append(ticket)
+        actuals.append(actual)
         progress(step + 1, len(test_idx), "chain backtest")
     hits = np.array(hits, float)
     m = len(hits)
@@ -97,7 +108,8 @@ def backtest(product_name: str, test_draws: int = 120, retrain_every: int = 20,
     return {"product": product.label, "model": "chain-ridge", "tested": m,
             "mean_hits": float(hits.mean()), "hits_lo": float(lo),
             "hits_hi": float(hi), "baseline_hits": base,
-            "beats_baseline": bool(lo > base)}
+            "beats_baseline": bool(lo > base),
+            **decode.pos_summary(tickets, actuals, product)}
 
 
 def format_backtest(r: dict) -> str:
@@ -112,6 +124,7 @@ def format_backtest(r: dict) -> str:
         f"  mean hits       {r['mean_hits']:.3f}  "
         f"[95% CI {r['hits_lo']:.3f}, {r['hits_hi']:.3f}]",
         f"  random baseline {r['baseline_hits']:.3f}   → {verdict}",
+        *decode.format_pos(r),
         "",
         "  Each position is predicted from the previous one; still can't pick "
         "the actual draw. Same honest verdict, richer framing.",

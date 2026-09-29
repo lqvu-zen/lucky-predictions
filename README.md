@@ -100,7 +100,8 @@ lucky-predictions/
 │       ├── joint.py         # joint number×position grid
 │       ├── gap.py           # spacing model
 │       ├── chain.py         # conditional / autoregressive
-│       ├── perpos.py        # per-position classifier
+│       ├── perpos.py        # per-position classifiers (logreg / hgb / mlp)
+│       ├── decode.py        # prediction -> most-likely ticket; noise-free score
 │       ├── sampler.py       # empirical position sampler
 │       ├── proper.py        # log-loss / Brier scoring of the grid
 │       ├── ceiling.py       # best possible score + noise bands + p-values
@@ -156,10 +157,12 @@ uv run python run.py analyze power_655
 uv run python run.py ml-predict-pos   power_655        # positional (ridge)
 uv run python run.py ml-predict-pos   power_655 --model gb
 uv run python run.py ml-predict-joint power_655        # joint grid
+uv run python run.py ml-predict-clf   power_655 --kind mlp   # logreg / hgb / mlp
 
 # Evaluate (walk-forward backtest with bootstrap CIs)
 uv run python run.py ml-backtest-pos   power_655 --model both
 uv run python run.py ml-backtest-joint power_655
+uv run python run.py ml-backtest-clf   power_655 --kind all
 
 # The honest analysis — this is the interesting part
 uv run python run.py proper-score  power_655   # log-loss / Brier vs the entropy floor
@@ -240,7 +243,7 @@ crawler in response to a 403.
 2. `daily.bat` — crawl → report → predict/score → dashboard, printing live
    progress while appending to `logs/daily.log`; then commits `data/` +
    `predictions/`, `git pull --rebase --autostash`, and pushes.
-3. `install_schedule.bat` — registers the `LuckyDaily` task (default 21:00).
+3. `install_schedule.bat` — registers the `LuckyDaily` task (default 20:00).
 
 **Cloud (GitHub Actions) — rebuild + publish only.** No `schedule:` cron. A push
 to `data/**` or `predictions/**` triggers `run.py daily --no-crawl`, which

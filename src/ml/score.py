@@ -19,7 +19,7 @@ from datetime import datetime
 
 from analyze import load_draws
 from config import PRED_DIR, PRODUCTS, get_product
-from ml import ledger
+from ml import decode, ledger
 
 SCORED_PATH = PRED_DIR / "scored.jsonl"
 SCORECARD_PATH = PRED_DIR / "scorecard.json"
@@ -124,6 +124,10 @@ def rebuild_scorecard() -> dict:
                 # how many times this predictor reached its own best k/6
                 "best_pos_count": sum(1 for s in mr
                                       if s.get("pos_hits", 0) == best_pos),
+                # noise-free: this predictor's tickets graded by the exact law
+                # instead of by which numbers happened to come up
+                "law_pos_score": round(sum(decode.law_pos_score(_ticket(s), product)
+                                           for s in mr) / n, 4),
                 "spent": spent, "won": won, "net": won - spent,
                 "return_pct": round(100.0 * won / spent - 100.0, 1) if spent else 0.0,
             }
@@ -167,9 +171,13 @@ def rebuild_scorecard() -> dict:
                         "scored": models[m]["scored"]}
                     for m in by_model if m in models
                 },
+                # expected k/6 of each next-draw ticket under the exact law
+                "law_scores": {m: round(decode.law_pos_score(t, product), 4)
+                               for m, t in by_model.items() if t},
                 "consensus": [[int(num), int(c)] for num, c in consensus],
-                # the top main_count numbers by vote as the "consensus ticket"
-                "consensus_ticket": sorted(int(num) for num, _ in consensus[:product.main_count]),
+                # the saved consensus predictor (position-aware vote)
+                "consensus_ticket": by_model.get("consensus")
+                or decode.consensus_ticket(list(voters.values()), product),
             }
         # theoretical position baseline: best possible mean pos-hits if you
         # always guessed each position's most likely value (the mode)

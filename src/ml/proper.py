@@ -78,6 +78,58 @@ def shrunk_grid(product: Product, draws, strength: float = 20.0):
     return grid
 
 
+STRENGTHS = (0.0, 10.0, 30.0, 100.0, 300.0, 1000.0, 3000.0, 10000.0, float("inf"))
+
+
+def strength_losses(product: Product, draws, test_draws: int = 200,
+                    min_history: int = 50, strengths=STRENGTHS) -> dict:
+    """Walk-forward log-loss of `shrunk_grid` for each prior strength.
+
+    Each tested draw is scored with a grid built only from the draws before it.
+    strength 0 is the raw empirical grid (with the usual 0.5 smoothing so an
+    unseen cell isn't log(0)); inf is the closed-form law alone.
+    """
+    k, N = product.main_count, product.max_value
+    prior = closed_form_grid(product)
+    start = max(min_history, len(draws) - test_draws)
+    counts = [[0.0] * k for _ in range(N + 1)]
+    for d in draws[:start]:
+        for pos, val in enumerate(sorted(d["main"])):
+            counts[val][pos] += 1.0
+    loss = {s: 0.0 for s in strengths}
+    n = 0
+    for t in range(start, len(draws)):
+        actual = sorted(draws[t]["main"][:k])
+        for pos, v in enumerate(actual):
+            for s in strengths:
+                if s == float("inf"):
+                    p = prior[v][pos]
+                elif s == 0.0:
+                    p = (counts[v][pos] + 0.5) / (t + 0.5 * N)
+                else:
+                    p = (counts[v][pos] + s * prior[v][pos]) / (t + s)
+                loss[s] += -log(max(p, EPS))
+            counts[v][pos] += 1.0
+        n += k
+    return {s: loss[s] / n for s in strengths} if n else {}
+
+
+def choose_strength(product: Product, draws, **kw) -> float:
+    """Prior strength with the lowest walk-forward log-loss (roadmap #21)."""
+    losses = strength_losses(product, draws, **kw)
+    return min(losses, key=losses.get) if losses else 20.0
+
+
+def cv_grid(product: Product, draws):
+    """Shrunk grid at the cross-validated strength -> (grid, strength)."""
+    s = choose_strength(product, draws)
+    if s == float("inf"):
+        return closed_form_grid(product), s
+    if s == 0.0:
+        return empirical_grid(product, draws, smoothing=0.5), s
+    return shrunk_grid(product, draws, strength=s), s
+
+
 def entropy_floor(product: Product) -> float:
     """Mean per-position entropy of the true law — the best possible log-loss."""
     k, N = product.main_count, product.max_value

@@ -18,7 +18,7 @@ Round two:
 - [x] 7. Jackpot expectation — `src/jackpot.py`, `run.py jackpot`, dashboard card
 - [x] 8. Interactive ticket EV calculator — `src/ticket_ev.py`, `run.py ticket-ev`,
       dashboard card with 6 inputs + quick-pick, `tests/test_ticket_ev.py`
-- [ ] 9. Meta-learner (stacking) predictor — learn per-predictor weights
+- [ ] 9. Meta-learner (stacking) predictor — learn per-predictor weights (see also #32)
 - [ ] 10. Calibration curve for the joint grid
 - [ ] 11. "Does more data help?" — score vs training-window size
 
@@ -246,15 +246,23 @@ sharper measurement and better decision rules, not as a route to an edge.
       needed) and matches brute-force enumeration exactly on a random grid.
       Deliberately **not** registered as a predictor — it would duplicate
       `joint-grid` and add a fake name to the leaderboard.
-- [~] 21. **Bayesian shrinkage grid** — *half done*: `ml.proper.shrunk_grid`
-      (Dirichlet with the closed-form grid as prior, strength=20) already exists
-      and is scored — it beat the raw empirical grid on log-loss (3.3801 vs
-      3.3811, 6/55). Remaining: sweep the strength parameter to pick it by
-      cross-validation rather than by hand, and optionally register it as a
-      predictor.
+- [x] 21. **Bayesian shrinkage grid** — `proper.strength_losses` /
+      `choose_strength` / `cv_grid`; `joint-grid` now uses it + the optimal DP,
+      `tests/test_decode.py`. Walk-forward log-loss over 200 draws falls
+      monotonically as weight moves to the law (6/55: strength 0 → 3.3873,
+      300 → 3.3774, 10000 → 3.3635, inf → 3.3630), so CV picks the law outright
+      and `joint-grid` plays `1-11-22-33-44-55` every draw — 98% → 100% of the
+      ceiling. `test_cv_strength_trusts_history_when_history_deviates` guards
+      against a vacuous "always inf": on draws that break the law, CV hands
+      history most of the weight.
 - [ ] 22. **Positional Markov chain** — discrete P(x_i | x_(i−1)) transition
       matrices + Viterbi/beam search over ascending paths. Differs from the
       existing `chain-ridge` (regression) by being fully probabilistic.
+      **Caveat found while planning #30:** Viterbi returns the single most likely
+      *whole* ticket, and under the true law every sorted ticket has probability
+      exactly 1/C(N,k). The true chain has no most-likely path, so Viterbi on a
+      learned chain just picks noise (~random-ticket score). Worth building only
+      as that lesson, with marginal (forward-backward) decoding for the ticket.
 - [ ] 23. **Quantile / median regression per position** — predict the median or
       mode rather than the mean; better matched to an exact-match metric than
       ridge's squared-error target.
@@ -264,12 +272,19 @@ sharper measurement and better decision rules, not as a route to an edge.
       There is nothing left for a heuristic search to find.
 - [ ] 25. **Copula / order-statistic resampling** — sample tickets preserving
       the dependence between positions, not just the marginals.
-- [ ] 26. **LightGBM per-position classifier** — stronger learner than the
-      current logistic `perpos-clf`; useful precisely because it will *also*
-      land on the baseline.
-- [ ] 27. **Neural sequence model** — small LSTM/Transformer over the draw
-      sequence. The most persuasive negative result for anyone who assumes deep
-      learning would find something. (Needs torch — heavy.)
+- [x] 26. **Gradient-boosted per-position classifier** — `perpos-hgb`, sklearn's
+      `HistGradientBoostingClassifier` (LightGBM-style, no new dependency). Its
+      early stopping crashes here (stratified split; some numbers land at a
+      position once), so it uses fixed small settings picked by 5-fold CV
+      log-loss: 3.4194 vs 3.3895 for plain position frequencies. 97% / 96% of
+      the ceiling (6/55 / 6/45).
+- [~] 27. **Neural model** — *light version done*: `perpos-mlp`, a one-hidden-layer
+      sklearn MLP per position (no torch). CV log-loss 3.4094 — like every
+      learner, better the more it ignores its features, never better than plain
+      frequencies. Gotcha worth keeping: with early stopping the MLP scored
+      3.77, because it halts before the output biases learn the frequencies.
+      98% / 98% of the ceiling. Remaining: a real sequence model (LSTM /
+      Transformer over the draw sequence), which needs torch.
 - [x] 28. **Genetic-algorithm ticket** ⭐ — `src/ml/genetic.py`, `run.py overfit`,
       dashboard card + chart, `tests/test_genetic.py`.
 
@@ -298,6 +313,26 @@ sharper measurement and better decision rules, not as a route to an edge.
       lookup. `test_ga_cannot_beat_the_exact_optimum` pins that bound down.
 - [ ] 29. **Hidden Markov model** — latent-state model over positions; another
       "sophisticated method, same ceiling" data point.
+- [x] 30. **Mode decoding** ⭐ — `src/ml/decode.py`, used by positional / chain /
+      gap. The k/6 score rewards the *most likely* value per position; the
+      regressors rounded the *mean* (6/55 p1: mean 8 at P = 5.3%, mode 1 at
+      10.9%), which left them at ~69% of the ceiling, level with a random
+      ticket. Now: prediction + out-of-fold residuals → per-position histogram
+      → optimal DP. With CV-chosen regularization (scaled RidgeCV, early-stopped
+      GB) they reach 95–98%. A Gaussian-kernel smoothing was tried and was
+      worse (92.7% vs 95.2% in simulation — it drags p1's mode from 1 to 2);
+      `test_decoding_finds_the_skewed_mode` pins that down. Also made
+      `perpos-clf` scaled + strongly regularized (84% → 98%) and `consensus` a
+      per-position vote (63% → the other models' shared ticket).
+- [x] 31. **Noise-free "Expected" score** — `decode.law_pos_score`: a ticket's
+      expected k/6 under the exact law. Added to every backtest, to the
+      scorecard (`law_pos_score`, `next_prediction.law_scores`) and the
+      dashboard (leaderboard column + "exp %" badge). Realized k/6 over ~30
+      draws is mostly luck; this number is what showed the regressors sitting
+      at a random ticket's level.
+- [ ] 32. **Meta-learner on the Expected score** — #9 weights predictors by
+      realized score (noise). Weighting by `law_pos_score` instead converges
+      immediately — and just picks the law's ticket, which is the point to make.
 
 **Suggested order:** 18 → 14 → 20 → 21 (better metric, then a reference line,
 then a provably better decision rule, then better estimation), with 15 and 12

@@ -26,6 +26,7 @@ uv run python run.py ml-predict-pos power_655        # positional (ordered) tick
 uv run python run.py ml-predict-joint power_655      # joint number x position ticket
 uv run python run.py ml-backtest-pos power_655 --model both
 uv run python run.py ml-backtest-joint power_655
+uv run python run.py ml-backtest-clf power_655 --kind all   # logreg / hgb / mlp classifiers
 uv run python run.py proper-score power_655           # log-loss/Brier of the position grid
 uv run python run.py ceiling power_655                # best possible score + noise band + p-values
 uv run python run.py residual power_655               # does number K at position I match theory?
@@ -50,8 +51,10 @@ Data flows one direction:
 - **`src/config.py`** — the single source of truth. The frozen `Product` dataclass holds each game's ajaxpro `url`, magic `key`, `array_rows`, number range, `main_count`, and draw schedule (`draw_days`, `draw_hour`, `next_draw_date()` on Vietnam time). `PRODUCTS` maps name → Product. Adding/changing a game happens only here.
 - **`src/crawler.py`** — POSTs to the `ashx` ajaxpro endpoint, which returns JSON wrapping an HTML table fragment (`value.HtmlContent`). `_parse_html` scrapes rows, `crawl()` merges deduping by draw `id`, sorts by `(date, id)`, rewrites the JSONL. The scraping is the fragile part most likely to break if the site changes.
 - **`src/analyze.py`** — pure functions over loaded draws: `frequency`, `recent_frequency`, `hot_cold`, `days_since_last`, bundled by `summary()`.
-- **`src/ml/positional.py`** — sorts each draw ascending and trains one regressor per ordered position (`ridge`/`gb`); `predict_next` assembles an ascending ticket; `backtest` reports mean hits + bootstrap CI + per-position MAE. Needs numpy/scikit-learn.
-- **`src/ml/joint.py`** — pure-Python MLE of the grid `P(number k at position p)`; verifies it against the closed-form order-statistic law; `predict_next` picks a per-position-mode ticket; `backtest` reports mean hits + CI. No heavy deps.
+- **`src/ml/positional.py`** — sorts each draw ascending and trains one regressor per ordered position (`ridge` = scaled RidgeCV, `gb` = early-stopped boosting); `predict_next` mode-decodes an ascending ticket via `ml.decode`; `backtest` reports mean hits + bootstrap CI + per-position MAE. Needs numpy/scikit-learn.
+- **`src/ml/joint.py`** — pure-Python MLE of the grid `P(number k at position p)`; verifies it against the closed-form order-statistic law; `predict_next` blends it with that law at a CV-chosen strength (`proper.cv_grid`, which picks the law outright on real data) and takes the optimal ticket; `backtest` reports mean hits + CI. No heavy deps.
+- **`src/ml/decode.py`** — how models turn output into a ticket: regression means + out-of-fold residuals → a per-position distribution → `optimal.optimal_ticket` (the *mode*, which the k/6 score rewards, not the rounded mean). Also `law_pos_score` (a ticket's expected k/6 under the exact law — the noise-free yardstick shown as "Expected" on the dashboard) and the position-aware `consensus_ticket`.
+- **`src/ml/perpos.py`** — per-position classifiers (`logreg`/`hgb`/`mlp` → `perpos-clf`/`perpos-hgb`/`perpos-mlp`), settings chosen by CV log-loss.
 - **`src/ml/ledger.py` + `score.py`** — the predict→score loop: predictions are logged to `predictions/ledger.jsonl` before a draw, then `score_pending` matches them to real results (hits), and `rebuild_scorecard` writes `predictions/scorecard.json` for the dashboard.
 - **`src/dashboard.py`** — renders a self-contained HTML dashboard (number heatmap, number×position map, model scorecard).
 
@@ -80,7 +83,7 @@ The split that follows from that:
 - **PC (the only thing that crawls).** `daily.bat` runs crawl → report → predict/score
   loop → dashboard, printing live progress via `Tee-Object` while appending to
   `logs/daily.log`, then `git add data predictions`, `git pull --rebase --autostash`,
-  and pushes. `install_schedule.bat` registers the `LuckyDaily` task (default 21:00).
+  and pushes. `install_schedule.bat` registers the `LuckyDaily` task (default 20:00).
 - **Cloud (`.github/workflows/daily.yml`) — deploy only.** No `schedule:` cron. It
   triggers on pushes to `data/**` / `predictions/**`, runs `run.py daily --no-crawl`,
   and publishes to GitHub Pages. It deliberately **does not commit anything back**
