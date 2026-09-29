@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(schtasks /query /tn LuckyDaily /v /fo list | Select-String \"Task To Run|Start Time|Next Run|Status|Schedule Type\"; \\(Get-TimeZone\\).Id; cat D:\\\\Projects\\\\lucky-predictions\\\\daily.bat)",
+      "Bash(uv run python -c ' *)",
+      "Bash(sed -i 's/every evening at 21:00 \\(9 PM\\)/every evening at 20:00 \\(8 PM\\)/; s/change 21:00 below/change 20:00 below/; s/set \"RUNTIME=21:00\"/set \"RUNTIME=20:00\"/' install_schedule.bat)",
+      "Bash(sed -i 's/\\(default 21:00\\)/\\(default 20:00\\)/' README.md CLAUDE.md)",
+      "PowerShell(schtasks /change /tn LuckyDaily /st 20:00; schtasks /query /tn LuckyDaily /v /fo list | Select-String \"Start Time|Next Run\")",
+      "Bash(uv run *)",
+      "Bash(uv run --extra ml python -c ' *)",
+      "Bash(node --check \"C:/Users/Admin/AppData/Local/Temp/claude/d--Projects-lucky-predictions/c5477f4c-7b9f-4b77-a4e6-373e717926d7/scratchpad/dash.js\")",
+      "Bash(git fetch *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}
