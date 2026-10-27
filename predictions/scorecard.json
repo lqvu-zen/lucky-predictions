@@ -1,237 +1,237 @@
 {
-  "generated": "2026-10-26T20:00:44.633181",
+  "generated": "2026-10-27T20:00:27.292783",
   "games": {
     "power_655": {
       "label": "Power 6/55",
       "models": {
         "chain-ridge": {
-          "scored": 44,
-          "mean_hits": 0.591,
-          "mean_pos_hits": 0.341,
-          "mean_pos_score": 0.0568,
+          "scored": 45,
+          "mean_hits": 0.578,
+          "mean_pos_hits": 0.333,
+          "mean_pos_score": 0.0556,
           "baseline_hits": 0.655,
           "best_hits": 3,
           "best_pos_hits": 3,
           "best_pos_count": 1,
-          "law_pos_score": 0.0481,
-          "spent": 440000,
+          "law_pos_score": 0.0485,
+          "spent": 450000,
           "won": 50000,
-          "net": -390000,
-          "return_pct": -88.6
+          "net": -400000,
+          "return_pct": -88.9
         },
         "consensus": {
-          "scored": 44,
-          "mean_hits": 0.705,
-          "mean_pos_hits": 0.364,
-          "mean_pos_score": 0.0606,
+          "scored": 45,
+          "mean_hits": 0.689,
+          "mean_pos_hits": 0.356,
+          "mean_pos_score": 0.0593,
           "baseline_hits": 0.655,
           "best_hits": 2,
           "best_pos_hits": 2,
           "best_pos_count": 3,
-          "law_pos_score": 0.0449,
-          "spent": 440000,
+          "law_pos_score": 0.0453,
+          "spent": 450000,
           "won": 0,
-          "net": -440000,
+          "net": -450000,
           "return_pct": -100.0
         },
         "fun-balanced": {
-          "scored": 44,
-          "mean_hits": 0.614,
-          "mean_pos_hits": 0.386,
-          "mean_pos_score": 0.0644,
+          "scored": 45,
+          "mean_hits": 0.644,
+          "mean_pos_hits": 0.4,
+          "mean_pos_score": 0.0667,
           "baseline_hits": 0.655,
           "best_hits": 3,
           "best_pos_hits": 3,
           "best_pos_count": 1,
-          "law_pos_score": 0.0424,
-          "spent": 440000,
+          "law_pos_score": 0.0422,
+          "spent": 450000,
           "won": 50000,
-          "net": -390000,
-          "return_pct": -88.6
+          "net": -400000,
+          "return_pct": -88.9
         },
         "fun-cold": {
-          "scored": 44,
-          "mean_hits": 0.636,
-          "mean_pos_hits": 0.25,
-          "mean_pos_score": 0.0417,
+          "scored": 45,
+          "mean_hits": 0.622,
+          "mean_pos_hits": 0.244,
+          "mean_pos_score": 0.0407,
           "baseline_hits": 0.655,
           "best_hits": 2,
           "best_pos_hits": 2,
           "best_pos_count": 1,
-          "law_pos_score": 0.0441,
-          "spent": 440000,
+          "law_pos_score": 0.0442,
+          "spent": 450000,
           "won": 0,
-          "net": -440000,
+          "net": -450000,
           "return_pct": -100.0
         },
         "fun-hot": {
-          "scored": 44,
-          "mean_hits": 0.727,
-          "mean_pos_hits": 0.341,
-          "mean_pos_score": 0.0568,
+          "scored": 45,
+          "mean_hits": 0.778,
+          "mean_pos_hits": 0.356,
+          "mean_pos_score": 0.0593,
           "baseline_hits": 0.655,
           "best_hits": 3,
           "best_pos_hits": 2,
           "best_pos_count": 2,
-          "law_pos_score": 0.0422,
-          "spent": 440000,
-          "won": 100000,
-          "net": -340000,
-          "return_pct": -77.3
+          "law_pos_score": 0.0423,
+          "spent": 450000,
+          "won": 150000,
+          "net": -300000,
+          "return_pct": -66.7
         },
         "fun-overdue": {
-          "scored": 44,
-          "mean_hits": 0.614,
-          "mean_pos_hits": 0.25,
-          "mean_pos_score": 0.0417,
+          "scored": 45,
+          "mean_hits": 0.6,
+          "mean_pos_hits": 0.244,
+          "mean_pos_score": 0.0407,
           "baseline_hits": 0.655,
           "best_hits": 3,
           "best_pos_hits": 3,
           "best_pos_count": 1,
-          "law_pos_score": 0.041,
-          "spent": 440000,
+          "law_pos_score": 0.0411,
+          "spent": 450000,
           "won": 50000,
-          "net": -390000,
-          "return_pct": -88.6
+          "net": -400000,
+          "return_pct": -88.9
         },
         "fun-random": {
-          "scored": 44,
-          "mean_hits": 0.705,
-          "mean_pos_hits": 0.295,
-          "mean_pos_score": 0.0492,
+          "scored": 45,
+          "mean_hits": 0.711,
+          "mean_pos_hits": 0.289,
+          "mean_pos_score": 0.0481,
           "baseline_hits": 0.655,
           "best_hits": 2,
           "best_pos_hits": 2,
           "best_pos_count": 2,
-          "law_pos_score": 0.0438,
-          "spent": 440000,
+          "law_pos_score": 0.0435,
+          "spent": 450000,
           "won": 0,
-          "net": -440000,
+          "net": -450000,
           "return_pct": -100.0
         },
         "gap-ridge": {
-          "scored": 44,
-          "mean_hits": 0.636,
-          "mean_pos_hits": 0.273,
-          "mean_pos_score": 0.0455,
+          "scored": 45,
+          "mean_hits": 0.622,
+          "mean_pos_hits": 0.267,
+          "mean_pos_score": 0.0444,
           "baseline_hits": 0.655,
           "best_hits": 2,
           "best_pos_hits": 2,
           "best_pos_count": 1,
-          "law_pos_score": 0.0484,
-          "spent": 440000,
+          "law_pos_score": 0.0487,
+          "spent": 450000,
           "won": 0,
-          "net": -440000,
+          "net": -450000,
           "return_pct": -100.0
         },
         "joint-grid": {
-          "scored": 44,
-          "mean_hits": 0.705,
-          "mean_pos_hits": 0.455,
-          "mean_pos_score": 0.0758,
+          "scored": 45,
+          "mean_hits": 0.689,
+          "mean_pos_hits": 0.444,
+          "mean_pos_score": 0.0741,
           "baseline_hits": 0.655,
           "best_hits": 2,
           "best_pos_hits": 2,
           "best_pos_count": 2,
           "law_pos_score": 0.0641,
-          "spent": 440000,
+          "spent": 450000,
           "won": 0,
-          "net": -440000,
+          "net": -450000,
           "return_pct": -100.0
         },
         "perpos-clf": {
-          "scored": 36,
-          "mean_hits": 0.694,
-          "mean_pos_hits": 0.333,
-          "mean_pos_score": 0.0556,
+          "scored": 37,
+          "mean_hits": 0.676,
+          "mean_pos_hits": 0.324,
+          "mean_pos_score": 0.0541,
           "baseline_hits": 0.655,
           "best_hits": 3,
           "best_pos_hits": 2,
           "best_pos_count": 2,
-          "law_pos_score": 0.0567,
-          "spent": 360000,
+          "law_pos_score": 0.0569,
+          "spent": 370000,
           "won": 50000,
-          "net": -310000,
-          "return_pct": -86.1
+          "net": -320000,
+          "return_pct": -86.5
         },
         "perpos-hgb": {
-          "scored": 7,
-          "mean_hits": 0.714,
-          "mean_pos_hits": 0.571,
-          "mean_pos_score": 0.0952,
-          "baseline_hits": 0.655,
-          "best_hits": 2,
-          "best_pos_hits": 2,
-          "best_pos_count": 1,
-          "law_pos_score": 0.064,
-          "spent": 70000,
-          "won": 0,
-          "net": -70000,
-          "return_pct": -100.0
-        },
-        "perpos-mlp": {
-          "scored": 7,
-          "mean_hits": 0.857,
-          "mean_pos_hits": 0.571,
-          "mean_pos_score": 0.0952,
+          "scored": 8,
+          "mean_hits": 0.625,
+          "mean_pos_hits": 0.5,
+          "mean_pos_score": 0.0833,
           "baseline_hits": 0.655,
           "best_hits": 2,
           "best_pos_hits": 2,
           "best_pos_count": 1,
           "law_pos_score": 0.0638,
-          "spent": 70000,
+          "spent": 80000,
           "won": 0,
-          "net": -70000,
+          "net": -80000,
           "return_pct": -100.0
         },
-        "positional-gb": {
-          "scored": 36,
-          "mean_hits": 0.694,
-          "mean_pos_hits": 0.25,
-          "mean_pos_score": 0.0417,
-          "baseline_hits": 0.655,
-          "best_hits": 2,
-          "best_pos_hits": 1,
-          "best_pos_count": 9,
-          "law_pos_score": 0.0479,
-          "spent": 360000,
-          "won": 0,
-          "net": -360000,
-          "return_pct": -100.0
-        },
-        "positional-ridge": {
-          "scored": 44,
-          "mean_hits": 0.636,
-          "mean_pos_hits": 0.364,
-          "mean_pos_score": 0.0606,
-          "baseline_hits": 0.655,
-          "best_hits": 3,
-          "best_pos_hits": 3,
-          "best_pos_count": 1,
-          "law_pos_score": 0.0482,
-          "spent": 440000,
-          "won": 50000,
-          "net": -390000,
-          "return_pct": -88.6
-        },
-        "sampler": {
-          "scored": 44,
-          "mean_hits": 0.523,
-          "mean_pos_hits": 0.227,
-          "mean_pos_score": 0.0379,
+        "perpos-mlp": {
+          "scored": 8,
+          "mean_hits": 0.75,
+          "mean_pos_hits": 0.5,
+          "mean_pos_score": 0.0833,
           "baseline_hits": 0.655,
           "best_hits": 2,
           "best_pos_hits": 2,
           "best_pos_count": 1,
-          "law_pos_score": 0.0447,
-          "spent": 440000,
+          "law_pos_score": 0.0638,
+          "spent": 80000,
           "won": 0,
-          "net": -440000,
+          "net": -80000,
+          "return_pct": -100.0
+        },
+        "positional-gb": {
+          "scored": 37,
+          "mean_hits": 0.676,
+          "mean_pos_hits": 0.243,
+          "mean_pos_score": 0.0405,
+          "baseline_hits": 0.655,
+          "best_hits": 2,
+          "best_pos_hits": 1,
+          "best_pos_count": 9,
+          "law_pos_score": 0.0484,
+          "spent": 370000,
+          "won": 0,
+          "net": -370000,
+          "return_pct": -100.0
+        },
+        "positional-ridge": {
+          "scored": 45,
+          "mean_hits": 0.622,
+          "mean_pos_hits": 0.356,
+          "mean_pos_score": 0.0593,
+          "baseline_hits": 0.655,
+          "best_hits": 3,
+          "best_pos_hits": 3,
+          "best_pos_count": 1,
+          "law_pos_score": 0.0485,
+          "spent": 450000,
+          "won": 50000,
+          "net": -400000,
+          "return_pct": -88.9
+        },
+        "sampler": {
+          "scored": 45,
+          "mean_hits": 0.511,
+          "mean_pos_hits": 0.222,
+          "mean_pos_score": 0.037,
+          "baseline_hits": 0.655,
+          "best_hits": 2,
+          "best_pos_hits": 2,
+          "best_pos_count": 1,
+          "law_pos_score": 0.045,
+          "spent": 450000,
+          "won": 0,
+          "net": -450000,
           "return_pct": -100.0
         }
       },
       "next_prediction": {
-        "target_date": "2026-10-27",
+        "target_date": "2026-10-29",
         "by_model": {
           "positional-ridge": [
             1,
@@ -244,8 +244,8 @@
           "positional-gb": [
             1,
             11,
-            21,
-            40,
+            18,
+            29,
             46,
             55
           ],
@@ -269,7 +269,7 @@
             1,
             11,
             20,
-            30,
+            42,
             48,
             55
           ],
@@ -282,11 +282,11 @@
             55
           ],
           "perpos-hgb": [
-            1,
+            3,
             11,
-            24,
-            42,
-            49,
+            23,
+            34,
+            43,
             55
           ],
           "perpos-mlp": [
@@ -298,52 +298,52 @@
             55
           ],
           "sampler": [
-            1,
-            7,
-            13,
-            37,
-            46,
-            51
+            8,
+            16,
+            34,
+            43,
+            50,
+            53
           ],
           "fun-random": [
-            2,
-            6,
-            9,
-            11,
-            12,
-            45
+            10,
+            13,
+            25,
+            30,
+            39,
+            54
           ],
           "fun-hot": [
-            9,
+            2,
             27,
             28,
-            39,
-            51,
-            54
+            30,
+            42,
+            47
           ],
           "fun-cold": [
-            12,
-            16,
-            29,
+            14,
+            21,
+            26,
+            31,
             33,
-            41,
-            54
+            44
           ],
           "fun-overdue": [
-            3,
-            32,
+            4,
+            8,
             33,
-            34,
-            46,
-            48
+            38,
+            40,
+            43
           ],
           "fun-balanced": [
-            9,
             15,
-            20,
-            25,
-            27,
-            42
+            29,
+            40,
+            47,
+            52,
+            53
           ],
           "consensus": [
             1,
@@ -376,158 +376,158 @@
           "positional-ridge": {
             "best_pos_hits": 3,
             "best_pos_count": 1,
-            "mean_pos_score": 0.0606,
-            "scored": 44
+            "mean_pos_score": 0.0593,
+            "scored": 45
           },
           "positional-gb": {
             "best_pos_hits": 1,
             "best_pos_count": 9,
-            "mean_pos_score": 0.0417,
-            "scored": 36
+            "mean_pos_score": 0.0405,
+            "scored": 37
           },
           "joint-grid": {
             "best_pos_hits": 2,
             "best_pos_count": 2,
-            "mean_pos_score": 0.0758,
-            "scored": 44
+            "mean_pos_score": 0.0741,
+            "scored": 45
           },
           "gap-ridge": {
             "best_pos_hits": 2,
             "best_pos_count": 1,
-            "mean_pos_score": 0.0455,
-            "scored": 44
+            "mean_pos_score": 0.0444,
+            "scored": 45
           },
           "chain-ridge": {
             "best_pos_hits": 3,
             "best_pos_count": 1,
-            "mean_pos_score": 0.0568,
-            "scored": 44
+            "mean_pos_score": 0.0556,
+            "scored": 45
           },
           "perpos-clf": {
             "best_pos_hits": 2,
             "best_pos_count": 2,
-            "mean_pos_score": 0.0556,
-            "scored": 36
+            "mean_pos_score": 0.0541,
+            "scored": 37
           },
           "perpos-hgb": {
             "best_pos_hits": 2,
             "best_pos_count": 1,
-            "mean_pos_score": 0.0952,
-            "scored": 7
+            "mean_pos_score": 0.0833,
+            "scored": 8
           },
           "perpos-mlp": {
             "best_pos_hits": 2,
             "best_pos_count": 1,
-            "mean_pos_score": 0.0952,
-            "scored": 7
+            "mean_pos_score": 0.0833,
+            "scored": 8
           },
           "sampler": {
             "best_pos_hits": 2,
             "best_pos_count": 1,
-            "mean_pos_score": 0.0379,
-            "scored": 44
+            "mean_pos_score": 0.037,
+            "scored": 45
           },
           "fun-random": {
             "best_pos_hits": 2,
             "best_pos_count": 2,
-            "mean_pos_score": 0.0492,
-            "scored": 44
+            "mean_pos_score": 0.0481,
+            "scored": 45
           },
           "fun-hot": {
             "best_pos_hits": 2,
             "best_pos_count": 2,
-            "mean_pos_score": 0.0568,
-            "scored": 44
+            "mean_pos_score": 0.0593,
+            "scored": 45
           },
           "fun-cold": {
             "best_pos_hits": 2,
             "best_pos_count": 1,
-            "mean_pos_score": 0.0417,
-            "scored": 44
+            "mean_pos_score": 0.0407,
+            "scored": 45
           },
           "fun-overdue": {
             "best_pos_hits": 3,
             "best_pos_count": 1,
-            "mean_pos_score": 0.0417,
-            "scored": 44
+            "mean_pos_score": 0.0407,
+            "scored": 45
           },
           "fun-balanced": {
             "best_pos_hits": 3,
             "best_pos_count": 1,
-            "mean_pos_score": 0.0644,
-            "scored": 44
+            "mean_pos_score": 0.0667,
+            "scored": 45
           },
           "consensus": {
             "best_pos_hits": 2,
             "best_pos_count": 3,
-            "mean_pos_score": 0.0606,
-            "scored": 44
+            "mean_pos_score": 0.0593,
+            "scored": 45
           }
         },
         "law_scores": {
           "positional-ridge": 0.0638,
-          "positional-gb": 0.0639,
+          "positional-gb": 0.0641,
           "joint-grid": 0.0651,
           "gap-ridge": 0.0638,
-          "chain-ridge": 0.0641,
+          "chain-ridge": 0.0626,
           "perpos-clf": 0.0639,
-          "perpos-hgb": 0.0622,
+          "perpos-hgb": 0.0618,
           "perpos-mlp": 0.0638,
-          "sampler": 0.0554,
-          "fun-random": 0.032,
-          "fun-hot": 0.0445,
-          "fun-cold": 0.0487,
-          "fun-overdue": 0.044,
-          "fun-balanced": 0.0334,
+          "sampler": 0.0453,
+          "fun-random": 0.0508,
+          "fun-hot": 0.0472,
+          "fun-cold": 0.0325,
+          "fun-overdue": 0.0431,
+          "fun-balanced": 0.0298,
           "consensus": 0.0638
         },
         "consensus": [
           [
-            1,
-            9
-          ],
-          [
             11,
-            9
+            8
           ],
           [
             55,
             8
           ],
           [
+            1,
+            7
+          ],
+          [
             29,
-            5
+            6
           ],
           [
             34,
-            5
-          ],
-          [
-            41,
-            4
-          ],
-          [
-            9,
-            3
+            6
           ],
           [
             33,
             3
           ],
           [
-            46,
+            41,
             3
           ],
           [
-            12,
+            43,
+            3
+          ],
+          [
+            47,
+            3
+          ],
+          [
+            8,
             2
           ],
           [
-            20,
+            30,
             2
           ],
           [
-            27,
+            40,
             2
           ],
           [
@@ -535,15 +535,11 @@
             2
           ],
           [
-            48,
+            44,
             2
           ],
           [
-            51,
-            2
-          ],
-          [
-            54,
+            53,
             2
           ],
           [
@@ -555,15 +551,19 @@
             1
           ],
           [
-            6,
+            4,
             1
           ],
           [
-            7,
+            10,
             1
           ],
           [
             13,
+            1
+          ],
+          [
+            14,
             1
           ],
           [
@@ -575,6 +575,14 @@
             1
           ],
           [
+            18,
+            1
+          ],
+          [
+            20,
+            1
+          ],
+          [
             21,
             1
           ],
@@ -583,7 +591,7 @@
             1
           ],
           [
-            24,
+            23,
             1
           ],
           [
@@ -591,19 +599,23 @@
             1
           ],
           [
+            26,
+            1
+          ],
+          [
+            27,
+            1
+          ],
+          [
             28,
             1
           ],
           [
-            30,
+            31,
             1
           ],
           [
-            32,
-            1
-          ],
-          [
-            37,
+            38,
             1
           ],
           [
@@ -611,23 +623,23 @@
             1
           ],
           [
-            40,
+            46,
             1
           ],
           [
-            44,
+            48,
             1
           ],
           [
-            45,
+            50,
             1
           ],
           [
-            47,
+            52,
             1
           ],
           [
-            49,
+            54,
             1
           ]
         ],
@@ -640,10 +652,218 @@
           55
         ]
       },
-      "total_scored": 570,
+      "total_scored": 585,
       "pos_baseline": 0.391,
       "pos_baseline_score": 0.0651,
       "history": [
+        {
+          "date": "2026-10-27",
+          "actual": [
+            9,
+            18,
+            27,
+            28,
+            31,
+            35
+          ],
+          "preds": [
+            {
+              "model": "fun-hot",
+              "ticket": [
+                9,
+                27,
+                28,
+                39,
+                51,
+                54
+              ],
+              "pos": 1,
+              "hits": 3
+            },
+            {
+              "model": "fun-balanced",
+              "ticket": [
+                9,
+                15,
+                20,
+                25,
+                27,
+                42
+              ],
+              "pos": 1,
+              "hits": 2
+            },
+            {
+              "model": "fun-random",
+              "ticket": [
+                2,
+                6,
+                9,
+                11,
+                12,
+                45
+              ],
+              "pos": 0,
+              "hits": 1
+            },
+            {
+              "model": "positional-ridge",
+              "ticket": [
+                1,
+                11,
+                29,
+                34,
+                41,
+                55
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "positional-gb",
+              "ticket": [
+                1,
+                11,
+                21,
+                40,
+                46,
+                55
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "joint-grid",
+              "ticket": [
+                1,
+                11,
+                22,
+                33,
+                44,
+                55
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "gap-ridge",
+              "ticket": [
+                1,
+                11,
+                29,
+                34,
+                41,
+                55
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "chain-ridge",
+              "ticket": [
+                1,
+                11,
+                20,
+                30,
+                48,
+                55
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "perpos-clf",
+              "ticket": [
+                1,
+                11,
+                29,
+                34,
+                47,
+                55
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "perpos-hgb",
+              "ticket": [
+                1,
+                11,
+                24,
+                42,
+                49,
+                55
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "perpos-mlp",
+              "ticket": [
+                1,
+                11,
+                29,
+                34,
+                41,
+                55
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "sampler",
+              "ticket": [
+                1,
+                7,
+                13,
+                37,
+                46,
+                51
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "fun-cold",
+              "ticket": [
+                12,
+                16,
+                29,
+                33,
+                41,
+                54
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "fun-overdue",
+              "ticket": [
+                3,
+                32,
+                33,
+                34,
+                46,
+                48
+              ],
+              "pos": 0,
+              "hits": 0
+            },
+            {
+              "model": "consensus",
+              "ticket": [
+                1,
+                11,
+                29,
+                34,
+                41,
+                55
+              ],
+              "pos": 0,
+              "hits": 0
+            }
+          ]
+        },
         {
           "date": "2026-10-24",
           "actual": [
@@ -4283,188 +4503,6 @@
               "hits": 0
             }
           ]
-        },
-        {
-          "date": "2026-08-29",
-          "actual": [
-            5,
-            10,
-            15,
-            29,
-            34,
-            45
-          ],
-          "preds": [
-            {
-              "model": "fun-overdue",
-              "ticket": [
-                5,
-                10,
-                12,
-                13,
-                34,
-                54
-              ],
-              "pos": 3,
-              "hits": 3
-            },
-            {
-              "model": "fun-cold",
-              "ticket": [
-                5,
-                12,
-                13,
-                28,
-                32,
-                35
-              ],
-              "pos": 1,
-              "hits": 1
-            },
-            {
-              "model": "joint-grid",
-              "ticket": [
-                1,
-                11,
-                29,
-                34,
-                47,
-                55
-              ],
-              "pos": 0,
-              "hits": 2
-            },
-            {
-              "model": "perpos-clf",
-              "ticket": [
-                2,
-                7,
-                19,
-                38,
-                45,
-                55
-              ],
-              "pos": 0,
-              "hits": 1
-            },
-            {
-              "model": "sampler",
-              "ticket": [
-                3,
-                20,
-                41,
-                45,
-                46,
-                55
-              ],
-              "pos": 0,
-              "hits": 1
-            },
-            {
-              "model": "fun-random",
-              "ticket": [
-                4,
-                19,
-                34,
-                36,
-                52,
-                53
-              ],
-              "pos": 0,
-              "hits": 1
-            },
-            {
-              "model": "consensus",
-              "ticket": [
-                8,
-                12,
-                13,
-                17,
-                33,
-                34
-              ],
-              "pos": 0,
-              "hits": 1
-            },
-            {
-              "model": "positional-ridge",
-              "ticket": [
-                8,
-                17,
-                25,
-                33,
-                42,
-                48
-              ],
-              "pos": 0,
-              "hits": 0
-            },
-            {
-              "model": "positional-gb",
-              "ticket": [
-                8,
-                12,
-                21,
-                30,
-                38,
-                47
-              ],
-              "pos": 0,
-              "hits": 0
-            },
-            {
-              "model": "gap-ridge",
-              "ticket": [
-                8,
-                17,
-                26,
-                33,
-                41,
-                49
-              ],
-              "pos": 0,
-              "hits": 0
-            },
-            {
-              "model": "chain-ridge",
-              "ticket": [
-                8,
-                17,
-                25,
-                33,
-                42,
-                48
-              ],
-              "pos": 0,
-              "hits": 0
-            },
-            {
-              "model": "fun-hot",
-              "ticket": [
-                3,
-                7,
-                13,
-                28,
-                38,
-                50
-              ],
-              "pos": 0,
-              "hits": 0
-            },
-            {
-              "model": "fun-balanced",
-              "ticket": [
-                9,
-                21,
-                33,
-                40,
-                41,
-                43
-              ],
-              "pos": 0,
-              "hits": 0
-            }
-          ]
         }
       ],
       "trend": {
@@ -4512,7 +4550,8 @@
           "2026-10-15",
           "2026-10-20",
           "2026-10-22",
-          "2026-10-24"
+          "2026-10-24",
+          "2026-10-27"
         ],
         "series": {
           "chain-ridge": [
@@ -4559,7 +4598,8 @@
             0.0569,
             0.0595,
             0.0581,
-            0.0568
+            0.0568,
+            0.0556
           ],
           "consensus": [
             0.0,
@@ -4605,7 +4645,8 @@
             0.061,
             0.0635,
             0.062,
-            0.0606
+            0.0606,
+            0.0593
           ],
           "fun-balanced": [
             0.0,
@@ -4651,7 +4692,8 @@
             0.065,
             0.0675,
             0.0659,
-            0.0644
+            0.0644,
+            0.0667
           ],
           "fun-cold": [
             0.0,
@@ -4697,7 +4739,8 @@
             0.0447,
             0.0437,
             0.0426,
-            0.0417
+            0.0417,
+            0.0407
           ],
           "fun-hot": [
             0.1667,
@@ -4743,7 +4786,8 @@
             0.061,
             0.0595,
             0.0581,
-            0.0568
+            0.0568,
+            0.0593
           ],
           "fun-overdue": [
             0.0,
@@ -4789,7 +4833,8 @@
             0.0447,
             0.0437,
             0.0426,
-            0.0417
+            0.0417,
+            0.0407
           ],
           "fun-random": [
             0.0,
@@ -4835,7 +4880,8 @@
             0.0528,
             0.0516,
             0.0504,
-            0.0492
+            0.0492,
+            0.0481
           ],
           "gap-ridge": [
             0.0,
@@ -4881,7 +4927,8 @@
             0.0447,
             0.0476,
             0.0465,
-            0.0455
+            0.0455,
+            0.0444
           ],
           "joint-grid": [
             0.0,
@@ -4927,7 +4974,8 @@
             0.0732,
             0.0754,
             0.0736,
-            0.0758
+            0.0758,
+            0.0741
           ],
           "perpos-clf": [
             null,
@@ -4973,7 +5021,8 @@
             0.0556,
             0.0588,
             0.0571,
-            0.0556
+            0.0556,
+            0.0541
           ],
           "perpos-hgb": [
             null,
@@ -5019,7 +5068,8 @@
             0.125,
             0.1333,
             0.1111,
-            0.0952
+            0.0952,
+            0.0833
           ],
           "perpos-mlp": [
             null,
@@ -5065,7 +5115,8 @@
             0.125,
             0.1333,
             0.1111,
-            0.0952
+            0.0952,
+            0.0833
           ],
           "positional-gb": [
             null,
@@ -5111,7 +5162,8 @@
             0.0455,
             0.0441,
             0.0429,
-            0.0417
+            0.0417,
+            0.0405
           ],
           "positional-ridge": [
             0.0,
@@ -5157,7 +5209,8 @@
             0.061,
             0.0635,
             0.062,
-            0.0606
+            0.0606,
+            0.0593
           ],
           "sampler": [
             0.1667,
@@ -5203,7 +5256,8 @@
             0.0325,
             0.0397,
             0.0388,
-            0.0379
+            0.0379,
+            0.037
           ]
         }
       }
