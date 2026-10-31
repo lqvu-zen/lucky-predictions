@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "lucky-crawler",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  // Draws are at 18:00 VN (11:00 UTC). First try ~18:45 VN, retry ~21:45 VN.
+  // Runs daily: 6/55 draws Tue/Thu/Sat, 6/45 Wed/Fri/Sun; dedupe makes extra runs no-ops.
+  "triggers": { "crons": ["45 11 * * *", "45 14 * * *"] },
+  // Try to run near vietlott.vn's origin. Note: placement only applies to the
+  // fetch handler (/probe, /run), not to cron runs.
+  "placement": { "hostname": "vietlott.vn" },
+  "vars": {
+    "GITHUB_REPO": "lqvu-zen/lucky-predictions",
+    "GITHUB_BRANCH": "main",
+    "PAGES": "1"
+  },
+  "observability": { "enabled": true }
+  // secrets (wrangler secret put): GITHUB_TOKEN, CRAWL_KEY
+}
